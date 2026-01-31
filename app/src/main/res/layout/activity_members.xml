@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".ACTIVITIES.MembersActivity">
+
+    <TextView
+        android:id="@+id/textView2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Members"
+        android:textColor="#8E24AA"
+        android:textSize="60sp"
+        android:textStyle="bold|italic"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <Button
+        android:id="@+id/btnHideMenu"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Hide menu"
+        android:textSize="20sp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <Button
+        android:id="@+id/btnHideAnimation"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Hide animation"
+        android:textSize="20sp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <ImageView
+        android:id="@+id/imgPicture"
+        android:layout_width="165dp"
+        android:layout_height="163dp"
+        android:layout_marginTop="60dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.498"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textView2"
+        tools:srcCompat="@tools:sample/avatars" />
+
+    <Button
+        android:id="@+id/btnTakePreview"
+        android:layout_width="169dp"
+        android:layout_height="48dp"
+        android:layout_marginTop="36dp"
+        android:text="Take Preview"
+        android:textSize="18sp"
+        app:layout_constraintEnd_toEndOf="@+id/imgPicture"
+        app:layout_constraintStart_toStartOf="@+id/imgPicture"
+        app:layout_constraintTop_toBottomOf="@+id/imgPicture" />
+
+    <Button
+        android:id="@+id/btnTakePicture"
+        android:layout_width="169dp"
+        android:layout_height="48dp"
+        android:layout_marginTop="20dp"
+        android:text="Take Picture"
+        android:textSize="18sp"
+        app:layout_constraintEnd_toEndOf="@+id/btnTakePreview"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="@+id/btnTakePreview"
+        app:layout_constraintTop_toBottomOf="@+id/btnTakePreview" />
+</androidx.constraintlayout.widget.ConstraintLayout>
