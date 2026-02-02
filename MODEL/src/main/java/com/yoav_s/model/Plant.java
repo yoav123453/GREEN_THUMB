@@ -6,17 +6,21 @@ import java.io.Serializable;
 import java.util.Objects;
 
 public class Plant extends BaseEntity implements Serializable {
+    private String userId;
     private String speciesId;
     private String nickname;
     private String location;
 
     public Plant() {}
 
-    public Plant(String speciesId, String nickname, String location) {
+    public Plant(String speciesId, String nickname, String location,String userId) {
+        this.userId = userId;
         this.speciesId = speciesId;
         this.nickname = nickname;
         this.location = location;
     }
+    public String getUserId() { return userId; }
+    public void setUserId(String userId) { this.userId = userId; }
 
     public String getSpeciesId() { return speciesId; }
     public void setSpeciesId(String speciesId) { this.speciesId = speciesId; }
@@ -32,7 +36,7 @@ public class Plant extends BaseEntity implements Serializable {
         if (o == null || getClass() != o.getClass()) return false;
         if (!super.equals(o)) return false;
         Plant plant = (Plant) o;
-        return Objects.equals(speciesId, plant.speciesId) && Objects.equals(nickname, plant.nickname) && Objects.equals(location, plant.location);
+        return Objects.equals(userId, plant.userId) && Objects.equals(speciesId, plant.speciesId) && Objects.equals(nickname, plant.nickname) && Objects.equals(location, plant.location);
     }
 }
 

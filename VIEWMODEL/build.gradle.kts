@@ -41,6 +41,8 @@ dependencies {
     androidTestImplementation(libs.espresso.core)
 
     implementation(libs.guava)
+    implementation("com.google.android.gms:play-services-tasks:18.0.2")
+
     //implementation("com.google.guava:guava:33.5.0-android")
 
     // The Gemini SDK itself

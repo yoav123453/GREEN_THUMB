@@ -25,4 +25,16 @@ public class UsersViewModel extends BaseViewModel<User, Users> {
     public void getAll() {
         getAllAscending(null, "displayName");
     }
+    public void logIn(String email, String password) {
+        repository.getCollection().whereEqualTo("email", email).whereEqualTo("password", password).get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    if (queryDocumentSnapshots.size() > 0) {
+                        User user = queryDocumentSnapshots.getDocuments().get(0).toObject(User.class);
+                        lvEntity.setValue(user);
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    lvEntity.setValue(null);
+                });
+    }
 }

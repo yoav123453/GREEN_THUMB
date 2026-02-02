@@ -11,10 +11,10 @@ public class FirebaseInstance {
 
     private FirebaseInstance(Context context) {
         FirebaseOptions options = new FirebaseOptions.Builder()
-                .setProjectId("")
-                .setApplicationId("")
-                .setApiKey("")
-                .setStorageBucket("")
+                .setProjectId("greenthumb-50e66")
+                .setApplicationId("greenthumb-50e66")
+                .setApiKey("AIzaSyBi0bQdM5QdkvXN3Mgw8vUXlETfLFtxBbc")
+                .setStorageBucket("greenthumb-50e66.firebasestorage.app")
                 .build();
 
         app = FirebaseApp.initializeApp(context, options);

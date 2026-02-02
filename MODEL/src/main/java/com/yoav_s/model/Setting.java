@@ -5,19 +5,21 @@ import com.yoav_s.model.BASE.BaseEntity;
 import java.util.Objects;
 import java.io.Serializable;
 
-public class Settings extends BaseEntity implements Serializable {
+public class Setting extends BaseEntity implements Serializable {
+    private String userId;
     private String reminderTime;
     private int snoozeTime;
     private int advanceHours;
     private boolean notificationsEnabled;
 
-    public Settings() {}
+    public Setting() {}
 
-    public Settings(String reminderTime, int snoozeTime, int advanceHours, boolean notificationsEnabled) {
+    public Setting(String reminderTime, int snoozeTime, int advanceHours, boolean notificationsEnabled) {
         this.reminderTime = reminderTime;
         this.snoozeTime = snoozeTime;
         this.advanceHours = advanceHours;
         this.notificationsEnabled = notificationsEnabled;
+        this.userId = userId;
     }
 
     public String getReminderTime() { return reminderTime; }
@@ -32,12 +34,15 @@ public class Settings extends BaseEntity implements Serializable {
     public boolean isNotificationsEnabled() { return notificationsEnabled; }
     public void setNotificationsEnabled(boolean notificationsEnabled) { this.notificationsEnabled = notificationsEnabled; }
 
+    public String getUserId() { return userId; }
+    public void setUserId(String userId) { this.userId = userId; }
+
     @Override
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) return false;
-        Settings settings = (Settings) o;
-        return snoozeTime == settings.snoozeTime && advanceHours == settings.advanceHours && notificationsEnabled == settings.notificationsEnabled && Objects.equals(reminderTime, settings.reminderTime);
+        if (!super.equals(o)) return false;
+        Setting setting = (Setting) o;
+        return snoozeTime == setting.snoozeTime && advanceHours == setting.advanceHours && notificationsEnabled == setting.notificationsEnabled && Objects.equals(userId, setting.userId) && Objects.equals(reminderTime, setting.reminderTime);
     }
-
 }
 

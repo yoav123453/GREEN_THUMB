@@ -9,6 +9,7 @@ import android.widget.Toast;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationBarView;
+import com.yoav_s.model.User;
 import com.yoav_s.tashtit.ACTIVITIES.MainActivity;
 
 import androidx.activity.EdgeToEdge;
@@ -43,7 +44,7 @@ public abstract class BaseActivity extends AppCompatActivity {
     protected abstract void initializeViews();
     protected abstract void setListeners();
     protected abstract void setViewModel();
-    //public static Member currentMember = null;
+    public static User currentUser = null;
 
     //region Progress Dialog
     public ProgressDialog mProgressDialog;

@@ -14,9 +14,7 @@ import com.yoav_s.repository.BASE.DB.BaseRepository;
 
     @Override
     protected Query getQueryForExist(User entity) {
-        return getCollection().
-                whereEqualTo("displayName", entity.getDisplayName())
-                .whereEqualTo("email", entity.getEmail());
+        return getCollection().whereEqualTo("email", entity.getEmail());
     }
 }
 

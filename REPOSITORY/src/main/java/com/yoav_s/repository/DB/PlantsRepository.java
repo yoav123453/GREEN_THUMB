@@ -16,6 +16,9 @@ public class PlantsRepository extends BaseRepository<Plant, Plants> {
 
     @Override
     protected Query getQueryForExist(Plant entity) {
-        return getCollection().whereEqualTo("nickname", entity.getNickname());
+        return getCollection().
+                whereEqualTo("nickname", entity.getNickname())
+                .whereEqualTo("userId", entity.getUserId());
+
     }
 }
