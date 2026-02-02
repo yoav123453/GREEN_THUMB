@@ -1,0 +1,287 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context=".ACTIVITIES.SignInActivity"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layoutDirection="ltr">
+
+    <!-- Background IMAGE -->
+    <ImageView
+        android:id="@+id/ivBackground"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:contentDescription="@null"
+        android:scaleType="centerCrop"
+        android:src="@drawable/leaves_bg" />
+
+    <!-- Replace the big white rectangle overlay with a VERY subtle dark scrim -->
+    <!-- (keeps readability but doesn't look like a white screen) -->
+    <View
+        android:id="@+id/bgScrim"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#1A000000" />
+
+    <androidx.core.widget.NestedScrollView
+        android:id="@+id/scrollRoot"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fillViewport="true"
+        android:overScrollMode="never">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/root"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingStart="20dp"
+            android:paddingEnd="20dp"
+            android:paddingTop="24dp"
+            android:paddingBottom="24dp">
+
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardSignIn"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:cardCornerRadius="24dp"
+                app:cardElevation="10dp"
+                app:cardUseCompatPadding="true"
+                app:cardBackgroundColor="#E6FFFFFF"
+                app:strokeColor="#33FFFFFF"
+                app:strokeWidth="1dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="22dp">
+
+                    <TextView
+                        android:id="@+id/tvAppName"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="GreenThumb"
+                        android:textAlignment="center"
+                        android:textStyle="bold"
+                        android:textSize="34sp"
+                        android:letterSpacing="0.02"
+                        android:fontFamily="sans-serif-medium"
+                        android:textColor="#1B5E20" />
+
+                    <TextView
+                        android:id="@+id/tvTagline"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="6dp"
+                        android:text="Keep your plants thriving"
+                        android:textAlignment="center"
+                        android:textSize="14sp"
+                        android:textColor="#6B7280" />
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="18dp" />
+
+                    <TextView
+                        android:id="@+id/tvTitle"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Sign In"
+                        android:textAlignment="center"
+                        android:textStyle="bold"
+                        android:textSize="22sp"
+                        android:letterSpacing="0.03"
+                        android:textColor="#1B5E20" />
+
+                    <View
+                        android:layout_width="64dp"
+                        android:layout_height="4dp"
+                        android:layout_gravity="center_horizontal"
+                        android:layout_marginTop="8dp"
+                        android:background="#1B5E20" />
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="18dp" />
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:id="@+id/tilEmail"
+                        style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="Email"
+                        app:boxCornerRadiusTopStart="16dp"
+                        app:boxCornerRadiusTopEnd="16dp"
+                        app:boxCornerRadiusBottomStart="16dp"
+                        app:boxCornerRadiusBottomEnd="16dp"
+                        app:boxStrokeColor="#C9D6CC"
+                        app:boxStrokeWidth="1dp"
+                        app:boxStrokeWidthFocused="2dp"
+                        app:hintTextColor="#6B7280"
+                        app:errorEnabled="true">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/etEmail"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:inputType="textEmailAddress"
+                            android:importantForAutofill="yes"
+                            android:autofillHints="emailAddress"
+                            android:maxLines="1"
+                            android:textColor="#1F2937"
+                            android:paddingTop="14dp"
+                            android:paddingBottom="14dp"
+                            android:drawableStart="@android:drawable/ic_dialog_email"
+                            android:drawablePadding="12dp" />
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="12dp" />
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:id="@+id/tilPassword"
+                        style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="Password"
+                        app:boxCornerRadiusTopStart="16dp"
+                        app:boxCornerRadiusTopEnd="16dp"
+                        app:boxCornerRadiusBottomStart="16dp"
+                        app:boxCornerRadiusBottomEnd="16dp"
+                        app:endIconMode="password_toggle"
+                        app:endIconTint="#6B7280"
+                        app:boxStrokeColor="#C9D6CC"
+                        app:boxStrokeWidth="1dp"
+                        app:boxStrokeWidthFocused="2dp"
+                        app:hintTextColor="#6B7280"
+                        app:errorEnabled="true">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/etPassword"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:inputType="textPassword"
+                            android:importantForAutofill="yes"
+                            android:autofillHints="password"
+                            android:maxLines="1"
+                            android:textColor="#1F2937"
+                            android:paddingTop="14dp"
+                            android:paddingBottom="14dp"
+                            android:drawableStart="@android:drawable/ic_lock_lock"
+                            android:drawablePadding="12dp" />
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="18dp" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnSignIn"
+                        android:layout_width="match_parent"
+                        android:layout_height="52dp"
+                        android:text="Sign in"
+                        android:textStyle="bold"
+                        android:textAllCaps="false"
+                        android:textSize="16sp"
+                        app:cornerRadius="18dp"
+                        app:icon="@android:drawable/ic_media_play"
+                        app:iconPadding="10dp"
+                        app:iconTint="#FFFFFF"
+                        android:backgroundTint="#1B5E20"
+                        android:textColor="#FFFFFF"
+                        android:elevation="2dp" />
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="14dp" />
+
+                    <LinearLayout
+                        android:id="@+id/rowRegister"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical">
+
+                        <TextView
+                            android:id="@+id/tvNoAccount"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="If you don’t have an account:"
+                            android:textSize="13sp"
+                            android:textColor="#6B7280"
+                            android:textAlignment="viewStart" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnRegister"
+                            style="@style/Widget.Material3.Button.OutlinedButton"
+                            android:layout_width="wrap_content"
+                            android:layout_height="40dp"
+                            android:text="register"
+                            android:textAllCaps="false"
+                            android:textStyle="bold"
+                            app:cornerRadius="14dp"
+                            android:minWidth="0dp"
+                            android:insetTop="0dp"
+                            android:insetBottom="0dp"
+                            android:textColor="#1B5E20"
+                            app:strokeColor="#1B5E20"
+                            app:strokeWidth="1dp" />
+
+                    </LinearLayout>
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="10dp" />
+
+                    <LinearLayout
+                        android:id="@+id/rowGuest"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical">
+
+                        <TextView
+                            android:id="@+id/tvGuestLabel"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="Continue as a guest:"
+                            android:textSize="13sp"
+                            android:textColor="#6B7280"
+                            android:textAlignment="viewStart" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnGuestMode"
+                            style="@style/Widget.Material3.Button.OutlinedButton"
+                            android:layout_width="wrap_content"
+                            android:layout_height="40dp"
+                            android:text="Guest mode"
+                            android:textAllCaps="false"
+                            android:textStyle="bold"
+                            app:cornerRadius="14dp"
+                            android:minWidth="0dp"
+                            android:insetTop="0dp"
+                            android:insetBottom="0dp"
+                            android:textColor="#1B5E20"
+                            app:strokeColor="#1B5E20"
+                            app:strokeWidth="1dp" />
+                    </LinearLayout>
+
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </androidx.core.widget.NestedScrollView>
+
+</FrameLayout>
+
+
+

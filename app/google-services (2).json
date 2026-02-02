@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "855989315810",
+    "project_id": "greenthumb-50e66",
+    "storage_bucket": "greenthumb-50e66.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:855989315810:android:72f1d7d1e892b8a221d6bb",
+        "android_client_info": {
+          "package_name": "com.yoav_s.tashtit"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBi0bQdM5QdkvXN3Mgw8vUXlETfLFtxBbc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
