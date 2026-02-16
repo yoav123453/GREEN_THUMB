@@ -24,7 +24,13 @@
         android:theme="@style/Theme.TASHTIT"
         tools:targetApi="31">
         <activity
-            android:name=".ACTIVITIES.SignInActivity"
+            android:name=".ACTIVITIES.GuestHomeActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ACTIVITIES.RegisterActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ACTIVITIES.MainActivity"
             android:exported="false" />
         <activity
             android:name=".ACTIVITIES.BASE.BaseListActivity"
@@ -36,7 +42,7 @@
             android:name=".ACTIVITIES.BASE.BaseActivity"
             android:exported="false" />
         <activity
-            android:name=".ACTIVITIES.MainActivity"
+            android:name=".ACTIVITIES.SignInActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
