@@ -3,12 +3,46 @@ package com.yoav_s.model;
 import com.yoav_s.model.BASE.BaseEntity;
 
 import java.io.Serializable;
+import java.util.Locale;
 import java.util.Objects;
 
 public class Specie extends BaseEntity implements Serializable {
 
-    public enum Category { HOUSE, SUCCULENT, HERB, ORNAMENTAL }
-    public enum Light { LOW, MED, HIGH }
+    public enum Category { TREE, SHRUB, FLOWER, SUCCULENT, CLIMBER, GRASS }
+
+    // ✅ Light values exactly like API options (hyphen needs enum alias)
+    public enum Light {
+        FULL_SUN("full_sun"),
+        SUN_PART_SHADE("sun-part_shade"),
+        PART_SHADE("part_shade"),
+        FULL_SHADE("full_shade");
+        private final String apiValue;
+
+        Light(String apiValue) {
+            this.apiValue = apiValue;
+        }
+
+        public String getApiValue() {
+            return apiValue;
+        }
+
+        @Override
+        public String toString() {
+            return apiValue;
+        }
+
+        public static Light fromApi(String value) {
+            if (value == null) return PART_SHADE;
+            String v = value.trim().toLowerCase(Locale.ROOT);
+            if (v.equals("full_sun")) return FULL_SUN;
+            if (v.equals("sun-part_shade")) return SUN_PART_SHADE;
+            if (v.equals("part_shade")) return PART_SHADE;
+            if (v.equals("full_shade")) return FULL_SHADE;
+            return PART_SHADE;
+        }
+    }
+
+    private int apiId = 0;
 
     private String name;
     private Category category;
@@ -35,6 +69,9 @@ public class Specie extends BaseEntity implements Serializable {
         this.baselineCarerepotDays = baselineCarerepotDays;
         this.light = light;
     }
+
+    public int getApiId() { return apiId; }
+    public void setApiId(int apiId) { this.apiId = apiId; }
 
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
@@ -63,8 +100,9 @@ public class Specie extends BaseEntity implements Serializable {
     @Override
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) return false;
+        if (!super.equals(o)) return false;
         Specie specie = (Specie) o;
-        return baselineCarewateringDays == specie.baselineCarewateringDays && baselineCarefertilizeDays == specie.baselineCarefertilizeDays && baselineCaresprayDays == specie.baselineCaresprayDays && baselineCarepruneDays == specie.baselineCarepruneDays && baselineCarerepotDays == specie.baselineCarerepotDays && Objects.equals(name, specie.name) && category == specie.category && light == specie.light;
+        return apiId == specie.apiId && baselineCarewateringDays == specie.baselineCarewateringDays && baselineCarefertilizeDays == specie.baselineCarefertilizeDays && baselineCaresprayDays == specie.baselineCaresprayDays && baselineCarepruneDays == specie.baselineCarepruneDays && baselineCarerepotDays == specie.baselineCarerepotDays && Objects.equals(name, specie.name) && category == specie.category && light == specie.light;
     }
 }
 

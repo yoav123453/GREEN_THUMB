@@ -94,7 +94,7 @@ public class SignInActivity extends BaseActivity implements EntryValidation {
             @Override
             public void onClick(View view) {
                 currentUser = null;
-                goToMain();
+                startActivity(new Intent(SignInActivity.this, GuestHomeActivity.class));
             }
         });
     }

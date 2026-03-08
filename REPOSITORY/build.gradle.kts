@@ -11,6 +11,8 @@ plugins {
     alias(libs.plugins.google.gms.google.services)
 }
 
+
+
 android {
     namespace = "com.yoav_s.repository"
     compileSdk = 36
@@ -23,6 +25,12 @@ android {
 
     defaultConfig {
         minSdk = 24
+
+        buildConfigField(
+            "String",
+            "PERENUAL_API_KEY",
+            "\"${localProperties.getProperty("PERENUAL_API_KEY")}\""
+        )
 
         // *** החלק הקריטי מספר 2 ***
         // השורה הזו יוצרת את המשתנה GEMINI_API_KEY בתוך BuildConfig.java
@@ -39,6 +47,7 @@ android {
             "CHATGPT_API_KEY",
             "\"${localProperties.getProperty("CHATGPT_API_KEY")}\""
         )
+        
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles("consumer-rules.pro")
@@ -81,4 +90,8 @@ dependencies {
     // Its dependency for Java Futures compatibility
     //implementation("com.google.guava:guava:32.1.3-android") // Or your version catalog
     implementation(libs.guava.v3213android) // Or your version catalog
+
+    implementation("com.squareup.retrofit2:retrofit:2.11.0")
+    implementation("com.squareup.retrofit2:converter-gson:2.11.0")
+    implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
 }
