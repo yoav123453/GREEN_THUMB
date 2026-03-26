@@ -22,6 +22,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.button.MaterialButton;
+import com.yoav_s.helper.LauncherHelper;
 import com.yoav_s.model.Specie;
 import com.yoav_s.tashtit.ACTIVITIES.BASE.BaseActivity;
 import com.yoav_s.tashtit.ADPTERS.SpeciesAdapter;
@@ -40,6 +41,7 @@ public class GuestHomeActivity extends BaseActivity {
 
     private MaterialButton btnSearchSpecies;
 
+    private LauncherHelper launcherHelper;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -55,8 +57,10 @@ public class GuestHomeActivity extends BaseActivity {
     }
     @Override
     protected void initializeActivity() {
+        launcherHelper = new LauncherHelper(this);
         initializeViews();
         setRecyclerView();
+        setListeners();
         setViewModel();
     }
 
@@ -72,12 +76,11 @@ public class GuestHomeActivity extends BaseActivity {
         btnRegister = findViewById(R.id.btnRegister);
 
 
-        // Spinner categories (strings must match ViewModel.setCategory switch)
-        String[] cats = new String[]{"All", "Tree", "Shrub", "Flower", "Succulent", "Climber", "Grass"};        ArrayAdapter<String> spAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, cats);
+        String[] cats = new String[]{"All", "Tree", "Shrub", "Flower", "Grass", "Other"};
+        ArrayAdapter<String> spAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, cats);
         spAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spCategory.setAdapter(spAdapter);
 
-        setListeners();
     }
     private void setRecyclerView() {
         adapter = new SpeciesAdapter(null);
@@ -89,23 +92,20 @@ public class GuestHomeActivity extends BaseActivity {
             public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
                 super.onScrolled(recyclerView, dx, dy);
 
-                // if reached bottom
-                if (!recyclerView.canScrollVertically(1)) {
+                if (dy <= 0) return; // only when user scrolls down
+
+                LinearLayoutManager lm = (LinearLayoutManager) recyclerView.getLayoutManager();
+                if (lm == null) return;
+
+                int total = lm.getItemCount();
+                int lastVisible = lm.findLastVisibleItemPosition();
+
+                boolean loading = Boolean.TRUE.equals(vm.getLoading().getValue());
+                if (!loading && !vm.isLastPage() && lastVisible >= total - 4) {
                     vm.loadNextPage();
                 }
             }
         });
-
-/*
-        adapter.setOnItemClickListener(new com.uri_r.tashtit.ADPTERS.BASE.GenericAdapter.OnItemClickListener<Specie>() {
-            @Override
-            public void onItemClick(Specie item, int position) {
-                Intent intent = new Intent(GuestHomeActivity.this, SpeciesDetailsGuestActivity.class);
-                intent.putExtra("SPECIE", item); // Specie implements Serializable
-                startActivity(intent);
-            }
-        });
-*/
 
     }
     @Override
@@ -124,7 +124,7 @@ public class GuestHomeActivity extends BaseActivity {
             @Override
             public void onItemSelected(android.widget.AdapterView<?> parent, android.view.View view, int position, long id) {
                 String selected = (String) spCategory.getSelectedItem();
-                vm.setCategory(selected); // ViewModel handles mapping + filtering
+                if (vm != null) vm.setCategory(selected);
             }
 
             @Override
@@ -135,11 +135,24 @@ public class GuestHomeActivity extends BaseActivity {
             String q = etSearchSpecies.getText().toString();
             vm.searchSpecies(q);
         });
+
+
+        adapter.setOnItemClickListener(new com.uri_r.tashtit.ADPTERS.BASE.GenericAdapter.OnItemClickListener<Specie>() {
+            @Override
+            public void onItemClick(Specie item, int position) {
+                Bundle bundle = new Bundle();
+                bundle.putSerializable("SPECIE", item);
+                launcherHelper.launchActivity(SpeciesDetailsGuestActivity.class, bundle);
+            }
+        });
     }
 
     @Override
     protected void setViewModel() {
         vm = new ViewModelProvider(this).get(SpeciesApiViewModel.class);
+
+        String selected = (String) spCategory.getSelectedItem();
+        if (selected != null) vm.setCategory(selected);
 
         vm.getLoading().observe(this, loading -> {
             if (Boolean.TRUE.equals(loading)) showProgressDialog(null, "Loading species...");

@@ -8,9 +8,8 @@ import java.util.Objects;
 
 public class Specie extends BaseEntity implements Serializable {
 
-    public enum Category { TREE, SHRUB, FLOWER, SUCCULENT, CLIMBER, GRASS }
+    public enum Category { TREE, SHRUB, FLOWER, GRASS, OTHER }
 
-    // ✅ Light values exactly like API options (hyphen needs enum alias)
     public enum Light {
         FULL_SUN("full_sun"),
         SUN_PART_SHADE("sun-part_shade"),
@@ -32,13 +31,24 @@ public class Specie extends BaseEntity implements Serializable {
         }
 
         public static Light fromApi(String value) {
-            if (value == null) return PART_SHADE;
-            String v = value.trim().toLowerCase(Locale.ROOT);
-            if (v.equals("full_sun")) return FULL_SUN;
-            if (v.equals("sun-part_shade")) return SUN_PART_SHADE;
-            if (v.equals("part_shade")) return PART_SHADE;
-            if (v.equals("full_shade")) return FULL_SHADE;
-            return PART_SHADE;
+            if (value == null || value.trim().isEmpty()) return null;
+
+            String v = value.trim()
+                    .toLowerCase(Locale.ROOT)
+                    .replaceAll("[\\s-]+", "_");
+
+            switch (v) {
+                case "full_sun":
+                    return FULL_SUN;
+                case "sun_part_shade":
+                    return SUN_PART_SHADE;
+                case "part_shade":
+                    return PART_SHADE;
+                case "full_shade":
+                    return FULL_SHADE;
+                default:
+                    return null;
+            }
         }
     }
 

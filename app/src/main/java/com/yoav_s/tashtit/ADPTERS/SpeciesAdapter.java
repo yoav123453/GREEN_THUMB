@@ -11,23 +11,13 @@ import com.yoav_s.tashtit.R;
 import java.util.List;
 
 public class SpeciesAdapter extends GenericAdapter<Specie> {
-
     public SpeciesAdapter(List<Specie> items) {
         super(
                 items,
                 R.layout.item_species,
-                holder -> {
-                    holder.putView("tvName", holder.itemView.findViewById(R.id.tvSpeciesName));
-                    holder.putView("tvMeta", holder.itemView.findViewById(R.id.tvSpeciesMeta));
-                },
-                (holder, item, position) -> {
-                    ((TextView) holder.getView("tvName")).setText(item.getName());
-
-                    String meta = "Category: " + item.getCategory()
-                            + " • Light: " + item.getLight()
-                            + " • Water: every " + item.getBaselineCarewateringDays() + " days";
-                    ((TextView) holder.getView("tvMeta")).setText(meta);
-                }
+                holder -> holder.putView("tvName", holder.itemView.findViewById(R.id.tvSpeciesName)),
+                (holder, item, position) ->
+                        ((TextView) holder.getView("tvName")).setText(item.getName())
         );
     }
 }

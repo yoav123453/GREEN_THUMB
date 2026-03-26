@@ -25,14 +25,5 @@
             android:textColor="#1B5E20"
             android:text="Monstera deliciosa" />
 
-        <TextView
-            android:id="@+id/tvSpeciesMeta"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="6dp"
-            android:textSize="13sp"
-            android:textColor="#4B5563"
-            android:text="Light: MED • Water: every 7 days" />
-
     </LinearLayout>
 </com.google.android.material.card.MaterialCardView>
