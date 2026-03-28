@@ -12,12 +12,16 @@ import com.yoav_s.repository.API.perenual.PerenualSpeciesDto;
 import com.yoav_s.repository.API.perenual.PerenualSpeciesListResponse;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 
 public class SpeciesApiRepository {
     public interface CallbackResult {
@@ -77,7 +81,9 @@ public class SpeciesApiRepository {
             cb.onError("Invalid specie id");
             return;
         }
+
         Log.d("PERENUAL_CALL", "speciesDetails id=" + baseSpecie.getApiId());
+
         PerenualApiClient.getService()
                 .speciesDetails(baseSpecie.getApiId(), BuildConfig.PERENUAL_API_KEY)
                 .enqueue(new Callback<PerenualSpeciesDetailsDto>() {
@@ -94,17 +100,27 @@ public class SpeciesApiRepository {
                             return;
                         }
 
-                        PerenualSpeciesDetailsDto dto = response.body();
+                        try {
+                            PerenualSpeciesDetailsDto dto = response.body();
 
-                        baseSpecie.setLight(mapLight(dto.sunlight));
-                        baseSpecie.setBaselineCarewateringDays(guessWaterDays(dto.watering));
+                            baseSpecie.setLight(mapLight(asStringList(dto.sunlight)));
+                            baseSpecie.setBaselineCarewateringDays(guessWaterDays(dto.watering));
+                            baseSpecie.setBaselineCarefertilizeDays(deriveFertilizeDays(dto, baseSpecie));
+                            baseSpecie.setBaselineCaresprayDays(deriveSprayDays(dto, baseSpecie));
+                            baseSpecie.setBaselineCarepruneDays(derivePruneDays(dto, baseSpecie));
+                            baseSpecie.setBaselineCarerepotDays(deriveRepotDays(dto, baseSpecie));
 
-                        cb.onSuccess(baseSpecie);
+                            cb.onSuccess(baseSpecie);
+                        } catch (Exception e) {
+                            Log.e("PERENUAL_EXCEPTION", "details mapping failed", e);
+                            cb.onError(e.toString());
+                        }
                     }
 
                     @Override
                     public void onFailure(Call<PerenualSpeciesDetailsDto> call, Throwable t) {
-                        cb.onError(t.getMessage() == null ? "Network error" : t.getMessage());
+                        Log.e("PERENUAL_EXCEPTION", "speciesDetails failed", t);
+                        cb.onError(t.toString());
                     }
                 });
     }
@@ -119,10 +135,10 @@ public class SpeciesApiRepository {
         Specie.Light light = null;
         int waterDays = 7;
 
-        int fertilizeDays = 30;
-        int sprayDays = 14;
-        int pruneDays = 60;
-        int repotDays = 180;
+        int fertilizeDays = -1;
+        int sprayDays = -1;
+        int pruneDays = -1;
+        int repotDays = -1;
 
         Specie s = new Specie(name, category, waterDays, fertilizeDays, sprayDays, pruneDays, repotDays, light);
         s.setApiId(dto.id);
@@ -206,6 +222,150 @@ public class SpeciesApiRepository {
         return null;
     }
 
+    private int deriveFertilizeDays(PerenualSpeciesDetailsDto dto, Specie specie) {
+        String typeText = detailsText(dto);
+        String cycle = normalize(dto.cycle);
+        String growth = normalize(dto.growthRate);
+        boolean indoor = asBoolean(dto.indoor);
+
+        int days;
+
+        if (isSucculentOrCactus(typeText)) {
+            days = 60;
+        } else if (containsAny(typeText, "herb", "vegetable")) {
+            days = 21;
+        } else if (cycle.contains("annual")) {
+            days = 21;
+        } else if (indoor && isTropicalOrIndoorFoliage(typeText, specie)) {
+            days = 30;
+        } else if (cycle.contains("perennial")) {
+            days = 45;
+        } else if (specie.getCategory() == Specie.Category.TREE || specie.getCategory() == Specie.Category.SHRUB) {
+            days = 60;
+        } else {
+            days = 30;
+        }
+
+        if (containsAny(growth, "high", "fast", "rapid")) {
+            days = Math.round(days * 0.75f);
+        } else if (containsAny(growth, "low", "slow")) {
+            days = Math.round(days * 1.5f);
+        }
+
+        return clamp(days, 14, 90);
+    }
+
+    private int deriveSprayDays(PerenualSpeciesDetailsDto dto, Specie specie) {
+        String typeText = detailsText(dto);
+        boolean indoor = asBoolean(dto.indoor);
+        boolean pestRisk = !asStringList(dto.pestSusceptibility).isEmpty();
+
+        String soilText = joinedNormalizedList(asStringList(dto.soil));
+        String sunText = joinedNormalizedList(asStringList(dto.sunlight));
+
+        if (isSucculentOrCactus(typeText)) {
+            return 0;
+        }
+
+        boolean humidPlant =
+                isTropicalOrIndoorFoliage(typeText, specie)
+                        || containsAny(soilText, "peat", "humus", "loam", "rich")
+                        || containsAny(sunText, "part shade", "part_shade", "full shade", "full_shade");
+
+        if (indoor && humidPlant) {
+            return pestRisk ? 3 : 4;
+        }
+
+        if (indoor) {
+            return pestRisk ? 5 : 7;
+        }
+
+        if (humidPlant) {
+            return pestRisk ? 7 : 10;
+        }
+
+        if (specie.getCategory() == Specie.Category.FLOWER
+                || specie.getCategory() == Specie.Category.OTHER) {
+            return 14;
+        }
+
+        return 0;
+    }
+
+    private int derivePruneDays(PerenualSpeciesDetailsDto dto, Specie specie) {
+        int pruningAmount = getPruningAmount(dto.pruningCount);
+        String pruningInterval = getPruningInterval(dto.pruningCount);
+
+        if (pruningAmount > 0) {
+            int intervalDays = intervalToDays(pruningInterval);
+            if (intervalDays > 0) {
+                return Math.max(1, Math.round((float) intervalDays / pruningAmount));
+            }
+        }
+
+        int pruningMonthsCount = countDistinctNonEmpty(asStringList(dto.pruningMonth));
+        if (pruningMonthsCount > 0) {
+            return Math.max(30, Math.round(365f / pruningMonthsCount));
+        }
+
+        if (isSucculentOrCactus(detailsText(dto))) {
+            return 180;
+        }
+
+        switch (specie.getCategory()) {
+            case TREE:
+                return 365;
+            case SHRUB:
+                return 180;
+            case FLOWER:
+                return 120;
+            case GRASS:
+                return 90;
+            case OTHER:
+            default:
+                return asBoolean(dto.indoor) ? 180 : 0;
+        }
+    }
+
+    private int deriveRepotDays(PerenualSpeciesDetailsDto dto, Specie specie) {
+        String typeText = detailsText(dto);
+        String cycle = normalize(dto.cycle);
+        String growth = normalize(dto.growthRate);
+        boolean indoor = asBoolean(dto.indoor);
+
+        if (cycle.contains("annual")) {
+            return 0;
+        }
+
+        if (isSucculentOrCactus(typeText)) {
+            return 730;
+        }
+
+        int days;
+        if (containsAny(growth, "high", "fast", "rapid")) {
+            days = 240;
+        } else if (containsAny(growth, "low", "slow")) {
+            days = 540;
+        } else {
+            days = 365;
+        }
+
+        if (indoor) {
+            return clamp(days, 180, 730);
+        }
+
+        if (specie.getCategory() == Specie.Category.TREE
+                || specie.getCategory() == Specie.Category.SHRUB) {
+            return clamp(Math.max(days, 730), 180, 730);
+        }
+
+        if (specie.getCategory() == Specie.Category.GRASS) {
+            return clamp(Math.max(days, 540), 180, 730);
+        }
+
+        return clamp(days, 180, 730);
+    }
+
     private int guessWaterDays(String wateringValue) {
         if (wateringValue == null) return 7;
 
@@ -217,5 +377,164 @@ public class SpeciesApiRepository {
         if (w.contains("none")) return 30;
 
         return 7;
+    }
+
+    private String normalize(String value) {
+        return value == null ? "" : value.trim().toLowerCase(Locale.ROOT);
+    }
+
+    private String detailsText(PerenualSpeciesDetailsDto dto) {
+        StringBuilder sb = new StringBuilder();
+
+        if (dto.type != null) sb.append(dto.type).append(" ");
+        if (dto.commonName != null) sb.append(dto.commonName).append(" ");
+        if (dto.scientificName != null) {
+            for (String s : dto.scientificName) {
+                if (s != null) sb.append(s).append(" ");
+            }
+        }
+
+        return sb.toString().toLowerCase(Locale.ROOT);
+    }
+
+    private boolean isSucculentOrCactus(String text) {
+        return containsAny(text, "succulent", "cactus", "cacti");
+    }
+
+    private boolean isTropicalOrIndoorFoliage(String text, Specie specie) {
+        if (containsAny(text,
+                "tropical", "houseplant", "indoor", "foliage", "fern", "calathea",
+                "philodendron", "monstera", "maranta", "alocasia", "anthurium",
+                "palm", "dracaena", "begonia", "orchid")) {
+            return true;
+        }
+
+        return specie.getCategory() == Specie.Category.OTHER || specie.getCategory() == Specie.Category.FLOWER;
+    }
+
+    private int intervalToDays(String interval) {
+        String v = normalize(interval);
+
+        if (containsAny(v, "year", "yearly", "annual")) return 365;
+        if (containsAny(v, "season", "seasonal")) return 90;
+        if (containsAny(v, "month", "monthly")) return 30;
+        if (containsAny(v, "week", "weekly")) return 7;
+        if (containsAny(v, "day", "daily")) return 1;
+
+        return 0;
+    }
+
+    private int countDistinctNonEmpty(List<String> values) {
+        if (values == null || values.isEmpty()) return 0;
+
+        Set<String> set = new HashSet<>();
+        for (String s : values) {
+            String v = normalize(s);
+            if (!v.isEmpty()) set.add(v);
+        }
+        return set.size();
+    }
+
+    private int clamp(int value, int min, int max) {
+        return Math.max(min, Math.min(max, value));
+    }
+
+    private List<String> asStringList(JsonElement element) {
+        List<String> out = new ArrayList<>();
+
+        if (element == null || element.isJsonNull()) return out;
+
+        try {
+            if (element.isJsonArray()) {
+                for (JsonElement item : element.getAsJsonArray()) {
+                    if (item != null && !item.isJsonNull()) {
+                        String v = item.getAsString();
+                        if (v != null && !v.trim().isEmpty()) {
+                            out.add(v.trim());
+                        }
+                    }
+                }
+            } else if (element.isJsonPrimitive()) {
+                String v = element.getAsString();
+                if (v != null && !v.trim().isEmpty()) {
+                    out.add(v.trim());
+                }
+            }
+        } catch (Exception ignored) {
+        }
+
+        return out;
+    }
+
+    private boolean asBoolean(JsonElement element) {
+        if (element == null || element.isJsonNull()) return false;
+
+        try {
+            if (element.isJsonPrimitive()) {
+                if (element.getAsJsonPrimitive().isBoolean()) {
+                    return element.getAsBoolean();
+                }
+                if (element.getAsJsonPrimitive().isNumber()) {
+                    return element.getAsInt() != 0;
+                }
+                if (element.getAsJsonPrimitive().isString()) {
+                    String v = normalize(element.getAsString());
+                    return v.equals("true") || v.equals("1") || v.equals("yes");
+                }
+            }
+        } catch (Exception ignored) {
+        }
+
+        return false;
+    }
+
+    private int getPruningAmount(JsonElement element) {
+        if (element == null || element.isJsonNull()) return 0;
+
+        try {
+            if (element.isJsonObject()) {
+                JsonObject obj = element.getAsJsonObject();
+                JsonElement amountEl = obj.get("amount");
+                if (amountEl != null && !amountEl.isJsonNull()) {
+                    return amountEl.getAsInt();
+                }
+            } else if (element.isJsonPrimitive() && element.getAsJsonPrimitive().isNumber()) {
+                return element.getAsInt();
+            }
+        } catch (Exception ignored) {
+        }
+
+        return 0;
+    }
+
+    private String getPruningInterval(JsonElement element) {
+        if (element == null || element.isJsonNull()) return "";
+
+        try {
+            if (element.isJsonObject()) {
+                JsonObject obj = element.getAsJsonObject();
+                JsonElement intervalEl = obj.get("interval");
+                if (intervalEl != null && !intervalEl.isJsonNull()) {
+                    return intervalEl.getAsString();
+                }
+            } else if (element.isJsonPrimitive()) {
+                return element.getAsString();
+            }
+        } catch (Exception ignored) {
+        }
+
+        return "";
+    }
+    private String joinedNormalizedList(List<String> values) {
+        if (values == null || values.isEmpty()) return "";
+
+        StringBuilder sb = new StringBuilder();
+        for (String v : values) {
+            if (v != null && !v.trim().isEmpty()) {
+                sb.append(v.trim()).append(" ");
+            }
+        }
+
+        return normalize(sb.toString());
     }
 }

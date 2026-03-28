@@ -115,7 +115,7 @@ public class SignInActivity extends BaseActivity implements EntryValidation {
     }
 
     private void goToMain() {
-        Intent intent = new Intent(SignInActivity.this, MainActivity.class);
+        Intent intent = new Intent(SignInActivity.this, MyPlantsActivity.class);
         startActivity(intent);
         finish();
     }

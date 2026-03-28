@@ -210,7 +210,7 @@ public class RegisterActivity extends BaseActivity implements EntryValidation {
     }
 
     private void goToMain() {
-        Intent intent = new Intent(RegisterActivity.this, MainActivity.class);
+        Intent intent = new Intent(RegisterActivity.this, MyPlantsActivity.class);
         startActivity(intent);
         finish();
     }

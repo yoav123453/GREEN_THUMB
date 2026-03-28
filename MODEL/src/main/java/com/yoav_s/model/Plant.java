@@ -8,14 +8,16 @@ import java.util.Objects;
 public class Plant extends BaseEntity implements Serializable {
     private String userId;
     private String speciesId;
+    private String speciesName;
     private String nickname;
     private String location;
 
     public Plant() {}
 
-    public Plant(String speciesId, String nickname, String location,String userId) {
+    public Plant(String speciesId, String speciesName, String nickname, String location, String userId) {
         this.userId = userId;
         this.speciesId = speciesId;
+        this.speciesName = speciesName;
         this.nickname = nickname;
         this.location = location;
     }
@@ -24,6 +26,9 @@ public class Plant extends BaseEntity implements Serializable {
 
     public String getSpeciesId() { return speciesId; }
     public void setSpeciesId(String speciesId) { this.speciesId = speciesId; }
+
+    public String getSpeciesName() { return speciesName; }
+    public void setSpeciesName(String speciesName) { this.speciesName = speciesName; }
 
     public String getNickname() { return nickname; }
     public void setNickname(String nickname) { this.nickname = nickname; }
@@ -36,7 +41,7 @@ public class Plant extends BaseEntity implements Serializable {
         if (o == null || getClass() != o.getClass()) return false;
         if (!super.equals(o)) return false;
         Plant plant = (Plant) o;
-        return Objects.equals(userId, plant.userId) && Objects.equals(speciesId, plant.speciesId) && Objects.equals(nickname, plant.nickname) && Objects.equals(location, plant.location);
+        return Objects.equals(userId, plant.userId) && Objects.equals(speciesId, plant.speciesId) && Objects.equals(speciesName, plant.speciesName) && Objects.equals(nickname, plant.nickname) && Objects.equals(location, plant.location);
     }
 }
 

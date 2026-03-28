@@ -184,7 +184,7 @@ public class SpeciesDetailsGuestActivity extends BaseActivity {
     }
 
     private String formatDays(int days) {
-        if (days <= 0) return "-";
+        if (days < 0) return "-";
         return String.valueOf(days);
     }
 }
