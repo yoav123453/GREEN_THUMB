@@ -8,7 +8,6 @@ if (localPropertiesFile.exists()) {
 
 plugins {
     alias(libs.plugins.android.library)
-    alias(libs.plugins.google.gms.google.services)
 }
 
 

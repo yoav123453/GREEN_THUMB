@@ -8,10 +8,10 @@
             <InsightsFilterSettings>
               <option name="connection">
                 <ConnectionSetting>
-                  <option name="appId" value="PLACEHOLDER" />
-                  <option name="mobileSdkAppId" value="" />
-                  <option name="projectId" value="" />
-                  <option name="projectNumber" value="" />
+                  <option name="appId" value="com.yoav_s.tashtit" />
+                  <option name="mobileSdkAppId" value="1:855989315810:android:72f1d7d1e892b8a221d6bb" />
+                  <option name="projectId" value="greenthumb-50e66" />
+                  <option name="projectNumber" value="855989315810" />
                 </ConnectionSetting>
               </option>
               <option name="signal" value="SIGNAL_UNSPECIFIED" />

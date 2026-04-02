@@ -48,7 +48,6 @@ public class AddPlantActivity extends BaseActivity {
     private Spinner spCategory;
     private RecyclerView rvSpeciesResults;
 
-    // change: hide/show the whole frame card, not only the RecyclerView
     private View cardSpeciesResults;
 
     private EditText etSpeciesSearch;
@@ -80,6 +79,7 @@ public class AddPlantActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
 
         if (currentUser == null) {
+            Toast.makeText(this, "For signed-in/registered users only", Toast.LENGTH_SHORT).show();
             startActivity(new Intent(this, SignInActivity.class));
             finish();
             return;
@@ -173,7 +173,6 @@ public class AddPlantActivity extends BaseActivity {
             }
         });
 
-        // change: hide the whole frame initially
         hideSpeciesResults();
     }
 
@@ -189,22 +188,26 @@ public class AddPlantActivity extends BaseActivity {
 
         navCalendar.setOnClickListener(v -> {
             drawerLayout.closeDrawer(GravityCompat.END);
-            Toast.makeText(this, "Calendar activity not implemented yet", Toast.LENGTH_SHORT).show();
+            launcherHelper.launchActivity(CalendarActivity.class);
+            finish();
         });
 
         navSettings.setOnClickListener(v -> {
             drawerLayout.closeDrawer(GravityCompat.END);
-            Toast.makeText(this, "Settings activity not implemented yet", Toast.LENGTH_SHORT).show();
+            launcherHelper.launchActivity(SettingsActivity.class);
+            finish();
         });
 
         navGuides.setOnClickListener(v -> {
             drawerLayout.closeDrawer(GravityCompat.END);
-            Toast.makeText(this, "Guides activity not implemented yet", Toast.LENGTH_SHORT).show();
+            launcherHelper.launchActivity(GuidesActivity.class);
+            finish();
         });
 
         navAi.setOnClickListener(v -> {
             drawerLayout.closeDrawer(GravityCompat.END);
-            Toast.makeText(this, "AI activity not implemented yet", Toast.LENGTH_SHORT).show();
+            launcherHelper.launchActivity(AIAssistantActivity.class);
+            finish();
         });
 
         navLogout.setOnClickListener(v -> logout());
@@ -267,7 +270,6 @@ public class AddPlantActivity extends BaseActivity {
             etSpeciesSearch.setSelection(etSpeciesSearch.getText().length());
             ignoreSpeciesTextChanges = false;
 
-            // change: hide frame after user chooses a species
             hideSpeciesResults();
         });
 
@@ -303,7 +305,6 @@ public class AddPlantActivity extends BaseActivity {
                             && list != null
                             && !list.isEmpty();
 
-            // change: show/hide whole frame
             if (shouldShowResults) {
                 showSpeciesResults();
             } else {
@@ -438,7 +439,6 @@ public class AddPlantActivity extends BaseActivity {
         }
     }
 
-    // change: show/hide whole frame and rv together
     private void showSpeciesResults() {
         cardSpeciesResults.setVisibility(View.VISIBLE);
         rvSpeciesResults.setVisibility(View.VISIBLE);

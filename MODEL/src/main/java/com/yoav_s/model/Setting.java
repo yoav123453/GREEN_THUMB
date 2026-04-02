@@ -9,15 +9,13 @@ public class Setting extends BaseEntity implements Serializable {
     private String userId;
     private String reminderTime;
     private int snoozeTime;
-    private int advanceHours;
     private boolean notificationsEnabled;
 
     public Setting() {}
 
-    public Setting(String reminderTime, int snoozeTime, int advanceHours, boolean notificationsEnabled) {
+    public Setting(String reminderTime, int snoozeTime, boolean notificationsEnabled) {
         this.reminderTime = reminderTime;
         this.snoozeTime = snoozeTime;
-        this.advanceHours = advanceHours;
         this.notificationsEnabled = notificationsEnabled;
         this.userId = userId;
     }
@@ -27,9 +25,6 @@ public class Setting extends BaseEntity implements Serializable {
 
     public int getSnoozeTime() { return snoozeTime; }
     public void setSnoozeTime(int snoozeTime) { this.snoozeTime = snoozeTime; }
-
-    public int getAdvanceHours() { return advanceHours; }
-    public void setAdvanceHours(int advanceHours) { this.advanceHours = advanceHours; }
 
     public boolean isNotificationsEnabled() { return notificationsEnabled; }
     public void setNotificationsEnabled(boolean notificationsEnabled) { this.notificationsEnabled = notificationsEnabled; }
@@ -42,7 +37,7 @@ public class Setting extends BaseEntity implements Serializable {
         if (o == null || getClass() != o.getClass()) return false;
         if (!super.equals(o)) return false;
         Setting setting = (Setting) o;
-        return snoozeTime == setting.snoozeTime && advanceHours == setting.advanceHours && notificationsEnabled == setting.notificationsEnabled && Objects.equals(userId, setting.userId) && Objects.equals(reminderTime, setting.reminderTime);
+        return snoozeTime == setting.snoozeTime && notificationsEnabled == setting.notificationsEnabled && Objects.equals(userId, setting.userId) && Objects.equals(reminderTime, setting.reminderTime);
     }
 }
 

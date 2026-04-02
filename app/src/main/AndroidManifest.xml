@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools">
+    xmlns:tools="http://schemas.android.com/tools" >
     <!-- Max SDK version for this permission -->
     <uses-feature
         android:name="android.hardware.camera"
@@ -8,6 +8,7 @@
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission
         android:name="android.permission.READ_EXTERNAL_STORAGE"
         android:maxSdkVersion="32" />
@@ -22,7 +23,42 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.TASHTIT"
-        tools:targetApi="31">
+        tools:targetApi="31" >
+        <activity
+            android:name=".ACTIVITIES.AIAssistantActivity"
+            android:exported="false" />
+
+        <receiver
+            android:name=".NOTIFICATIONS.TaskReminderReceiver"
+            android:exported="false" />
+        <receiver
+            android:name=".NOTIFICATIONS.TaskSnoozeReceiver"
+            android:exported="false" />
+
+        <activity
+            android:name=".ACTIVITIES.SettingsActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ACTIVITIES.AnalyticsActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ACTIVITIES.CreateGuideActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ACTIVITIES.GuideDetailsActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ACTIVITIES.GuidesActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ACTIVITIES.CalendarActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ACTIVITIES.HistoryActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ACTIVITIES.EditTaskActivity"
+            android:exported="false" />
         <activity
             android:name=".ACTIVITIES.PlantDetailsActivity"
             android:exported="false" />
@@ -46,20 +82,14 @@
             android:name=".ACTIVITIES.RegisterActivity"
             android:exported="false" />
         <activity
-            android:name=".ACTIVITIES.MainActivity"
-            android:exported="false" />
-        <activity
             android:name=".ACTIVITIES.BASE.BaseListActivity"
-            android:exported="false" />
-        <activity
-            android:name=".ACTIVITIES.MembersActivity"
             android:exported="false" />
         <activity
             android:name=".ACTIVITIES.BASE.BaseActivity"
             android:exported="false" />
         <activity
             android:name=".ACTIVITIES.SignInActivity"
-            android:exported="true">
+            android:exported="true" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -70,7 +100,7 @@
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.fileprovider"
             android:exported="false"
-            android:grantUriPermissions="true">
+            android:grantUriPermissions="true" >
             <meta-data
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/file_paths" />

@@ -5,7 +5,7 @@ import androidx.annotation.NonNull;
 import android.widget.TextView;
 
 import com.google.android.material.button.MaterialButton;
-import com.uri_r.tashtit.ADPTERS.BASE.GenericAdapter;
+import com.yoav_s.tashtit.ADPTERS.BASE.GenericAdapter;
 import com.yoav_s.model.CareTask;
 import com.yoav_s.model.Plant;
 import com.yoav_s.tashtit.R;

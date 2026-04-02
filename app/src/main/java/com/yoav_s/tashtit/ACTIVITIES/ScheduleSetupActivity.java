@@ -8,6 +8,9 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
+import com.yoav_s.tashtit.NOTIFICATIONS.TaskNotificationScheduler;
+
+
 
 import androidx.activity.EdgeToEdge;
 import androidx.core.graphics.Insets;
@@ -79,33 +82,29 @@ public class ScheduleSetupActivity extends BaseActivity implements EntryValidati
     private PlantsViewModel plantsViewModel;
     private CareTasksViewModel careTasksViewModel;
 
-    // Data received from AddPlantActivity.
     private Specie selectedSpecie;
     private String plantNickname;
     private String plantLocation;
 
-    // The date chosen by the user from the date picker.
     private LocalDate selectedStartDate = null;
 
-    // Simpler save state than before:
-    // first save the plant, then save its selected tasks.
+
     private boolean waitingForPlantSave = false;
     private boolean waitingForTaskSave = false;
+    private boolean saveInProgress = false;
 
-    // Temporary data used while saving.
     private Plant pendingPlant = null;
     private final List<CareTask> pendingTasks = new ArrayList<>();
     private int taskSaveIndex = 0;
 
-    // Lets the screen know when specie details are ready to use.
     private boolean specieDetailsReady = false;
 
-    // Creates the screen, checks login, applies layout and window insets.
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         if (currentUser == null) {
+            Toast.makeText(this, "For signed-in/registered users only", Toast.LENGTH_SHORT).show();
             startActivity(new Intent(this, SignInActivity.class));
             finish();
             return;
@@ -127,7 +126,6 @@ public class ScheduleSetupActivity extends BaseActivity implements EntryValidati
         initializeActivity();
     }
 
-    // Runs the whole setup flow of the activity.
     @Override
     protected void initializeActivity() {
         launcherHelper = new LauncherHelper(this);
@@ -146,7 +144,6 @@ public class ScheduleSetupActivity extends BaseActivity implements EntryValidati
         }
     }
 
-    // Connects the XML views to Java fields and prepares the read-only day fields.
     @Override
     protected void initializeViews() {
         android.view.View contentFrame = findViewById(R.id.content_frame);
@@ -190,7 +187,6 @@ public class ScheduleSetupActivity extends BaseActivity implements EntryValidati
         setupReadOnlyField(etRepotDays);
     }
 
-    // Sets all click listeners for menu, drawer actions, date picker, save and back.
     @Override
     protected void setListeners() {
         btnMenu.setOnClickListener(v -> drawerLayout.openDrawer(GravityCompat.END));
@@ -203,27 +199,30 @@ public class ScheduleSetupActivity extends BaseActivity implements EntryValidati
 
         navCalendar.setOnClickListener(v -> {
             drawerLayout.closeDrawer(GravityCompat.END);
-            Toast.makeText(this, "Calendar activity not implemented yet", Toast.LENGTH_SHORT).show();
+            launcherHelper.launchActivity(CalendarActivity.class);
+            finish();
         });
 
         navSettings.setOnClickListener(v -> {
             drawerLayout.closeDrawer(GravityCompat.END);
-            Toast.makeText(this, "Settings activity not implemented yet", Toast.LENGTH_SHORT).show();
+            launcherHelper.launchActivity(SettingsActivity.class);
+            finish();
         });
 
         navGuides.setOnClickListener(v -> {
             drawerLayout.closeDrawer(GravityCompat.END);
-            Toast.makeText(this, "Guides activity not implemented yet", Toast.LENGTH_SHORT).show();
+            launcherHelper.launchActivity(GuidesActivity.class);
+            finish();
         });
 
         navAi.setOnClickListener(v -> {
             drawerLayout.closeDrawer(GravityCompat.END);
-            Toast.makeText(this, "AI activity not implemented yet", Toast.LENGTH_SHORT).show();
+            launcherHelper.launchActivity(AIAssistantActivity.class);
+            finish();
         });
 
         navLogout.setOnClickListener(v -> logout());
 
-        // Only the card opens the date picker. No need for the TextView click too.
         cardStartDate.setOnClickListener(v -> openDatePicker());
 
         btnBack.setOnClickListener(v -> finish());
@@ -234,7 +233,6 @@ public class ScheduleSetupActivity extends BaseActivity implements EntryValidati
         });
     }
 
-    // Creates the ViewModels and observes specie loading plus the save flow.
     @Override
     protected void setViewModel() {
         speciesApiViewModel = new ViewModelProvider(this).get(SpeciesApiViewModel.class);
@@ -263,13 +261,11 @@ public class ScheduleSetupActivity extends BaseActivity implements EntryValidati
                 hideProgressDialog();
                 Toast.makeText(this, error, Toast.LENGTH_SHORT).show();
 
-                // If loading fails, still try to use the specie object already passed from AddPlantActivity.
                 specieDetailsReady = true;
                 showSpecieData();
             }
         });
 
-        // Handles the first step of saving: the plant document itself.
         plantsViewModel.getSuccess().observe(this, success -> {
             if (!waitingForPlantSave) return;
 
@@ -299,7 +295,6 @@ public class ScheduleSetupActivity extends BaseActivity implements EntryValidati
             saveNextTask();
         });
 
-        // Handles the second step of saving: the selected care tasks.
         careTasksViewModel.getSuccess().observe(this, success -> {
             if (!waitingForTaskSave) return;
 
@@ -321,13 +316,18 @@ public class ScheduleSetupActivity extends BaseActivity implements EntryValidati
                 Toast.makeText(this, "Plant schedule saved", Toast.LENGTH_SHORT).show();
                 resetSaveState();
 
-                setResult(Activity.RESULT_OK);
+                if (currentUser != null) {
+                    TaskNotificationScheduler.rescheduleAllForCurrentUser(this, currentUser);
+                }
+
+                Intent data = new Intent();
+                data.putExtra("PLANT_SAVED", true);
+                setResult(Activity.RESULT_OK, data);
                 finish();
             }
         });
     }
 
-    // Reads the specie, nickname and location sent from AddPlantActivity.
     private void readExtras() {
         Intent intent = getIntent();
 
@@ -350,7 +350,6 @@ public class ScheduleSetupActivity extends BaseActivity implements EntryValidati
         selectedSpecie = (Specie) specieObj;
     }
 
-    // Shows the loaded specie light and baseline task intervals on screen.
     private void showSpecieData() {
         if (selectedSpecie == null) return;
 
@@ -363,7 +362,6 @@ public class ScheduleSetupActivity extends BaseActivity implements EntryValidati
         applyTaskRow(etRepotDays, cbRepot, selectedSpecie.getBaselineCarerepotDays());
     }
 
-    // Fills one task row and disables it if the specie does not support that task.
     private void applyTaskRow(EditText etDays, CheckBox cbTask, int days) {
         if (days <= 0) {
             etDays.setText("-");
@@ -378,7 +376,6 @@ public class ScheduleSetupActivity extends BaseActivity implements EntryValidati
         }
     }
 
-    // Makes one EditText behave like a read-only display field.
     private void setupReadOnlyField(EditText editText) {
         editText.setFocusable(false);
         editText.setFocusableInTouchMode(false);
@@ -388,7 +385,6 @@ public class ScheduleSetupActivity extends BaseActivity implements EntryValidati
         editText.setKeyListener(null);
     }
 
-    // Opens the date picker and stores the chosen date in selectedStartDate.
     private void openDatePicker() {
         LocalDate today = LocalDate.now();
         LocalDate openAt = selectedStartDate != null ? selectedStartDate : today;
@@ -413,7 +409,6 @@ public class ScheduleSetupActivity extends BaseActivity implements EntryValidati
         picker.show(getSupportFragmentManager(), "START_DATE_PICKER");
     }
 
-    // Clears previous validation messages and prepares validation state.
     @Override
     public void setValidation() {
         cbWater.setError(null);
@@ -423,9 +418,6 @@ public class ScheduleSetupActivity extends BaseActivity implements EntryValidati
         cbRepot.setError(null);
     }
 
-    // Validates the screen before saving.
-    // Uses the date infrastructure helper directly because the Validator DATE rule
-    // only supports EditText and uses a hardcoded pattern that does not fit this screen well.
     @Override
     public boolean validate() {
         setValidation();
@@ -439,6 +431,8 @@ public class ScheduleSetupActivity extends BaseActivity implements EntryValidati
         if (validDate == null) {
             return false;
         }
+
+        selectedStartDate = validDate;
 
         if (!hasAtLeastOneSelectedTask()) {
             cbWater.setError("Select at least one task");
@@ -455,9 +449,7 @@ public class ScheduleSetupActivity extends BaseActivity implements EntryValidati
         return true;
     }
 
-    // Validates the chosen date using the helper infrastructure and prevents past dates.
     private LocalDate validateStartDate() {
-        // If the picker already provided the date, that is the most reliable source.
         if (selectedStartDate != null) {
             if (selectedStartDate.isBefore(LocalDate.now())) {
                 Toast.makeText(this, "Start date cannot be in the past", Toast.LENGTH_SHORT).show();
@@ -466,7 +458,6 @@ public class ScheduleSetupActivity extends BaseActivity implements EntryValidati
             return selectedStartDate;
         }
 
-        // Fallback: if needed, parse the text with the date helper infrastructure.
         String dateText = tvStartDate.getText().toString().trim();
 
         if (dateText.isEmpty() || dateText.equalsIgnoreCase("Tap to choose a date")) {
@@ -489,8 +480,13 @@ public class ScheduleSetupActivity extends BaseActivity implements EntryValidati
         return parsedDate;
     }
 
-    // Starts the save flow after validation succeeds.
     private void saveSchedule() {
+        if (saveInProgress) return;
+
+        saveInProgress = true;
+        btnSaveSchedule.setEnabled(false);
+        btnBack.setEnabled(false);
+
         pendingPlant = new Plant(
                 resolveSpeciesId(selectedSpecie),
                 selectedSpecie != null ? selectedSpecie.getName() : null,
@@ -506,7 +502,6 @@ public class ScheduleSetupActivity extends BaseActivity implements EntryValidati
         plantsViewModel.add(pendingPlant);
     }
 
-    // Checks whether the user selected at least one valid task row.
     private boolean hasAtLeastOneSelectedTask() {
         return isSelectedValidTask(etWaterDays, cbWater)
                 || isSelectedValidTask(etFertilizeDays, cbFertilize)
@@ -515,12 +510,10 @@ public class ScheduleSetupActivity extends BaseActivity implements EntryValidati
                 || isSelectedValidTask(etRepotDays, cbRepot);
     }
 
-    // Checks whether one task row is enabled, checked, and has a positive day interval.
     private boolean isSelectedValidTask(EditText etDays, CheckBox cbTask) {
         return cbTask.isEnabled() && cbTask.isChecked() && getTaskDays(etDays) > 0;
     }
 
-    // Reads the day interval number from a task row safely.
     private int getTaskDays(EditText etDays) {
         try {
             return Integer.parseInt(etDays.getText().toString().trim());
@@ -529,8 +522,7 @@ public class ScheduleSetupActivity extends BaseActivity implements EntryValidati
         }
     }
 
-    // Decides which specie id should be saved inside Plant.
-    // This is not a simple getter because it prefers apiId when available.
+
     private String resolveSpeciesId(Specie specie) {
         if (specie == null) return null;
 
@@ -541,7 +533,6 @@ public class ScheduleSetupActivity extends BaseActivity implements EntryValidati
         return specie.getIdFs();
     }
 
-    // Builds all selected task objects for this plant.
     private List<CareTask> buildSelectedTasks(String plantId, LocalDate startDate) {
         List<CareTask> tasks = new ArrayList<>();
 
@@ -554,7 +545,6 @@ public class ScheduleSetupActivity extends BaseActivity implements EntryValidati
         return tasks;
     }
 
-    // Adds one task to the save list only if it is selected and valid.
     private void maybeAddTask(List<CareTask> out,
                               String plantId,
                               CareTask.Type type,
@@ -570,7 +560,6 @@ public class ScheduleSetupActivity extends BaseActivity implements EntryValidati
         out.add(buildTask(plantId, type, everyDays, startDate));
     }
 
-    // Creates one CareTask object ready to save.
     private CareTask buildTask(String plantId, CareTask.Type type, int everyDays, LocalDate startDate) {
         CareTask task = new CareTask();
 
@@ -583,16 +572,12 @@ public class ScheduleSetupActivity extends BaseActivity implements EntryValidati
         task.setType(type);
         task.setEveryDays(everyDays);
         task.setState(CareTask.State.SCHEDULED);
-        task.setText(taskLabel);
-        task.setPhoto(null);
-        task.setPhotoUrl(null);
         task.setNextDueAt(new Timestamp(DateUtil_OLD.localDateToDate(dueDate)));
         task.setDoneAt(null);
 
         return task;
     }
 
-    // Saves the next task in the list.
     private void saveNextTask() {
         if (taskSaveIndex < 0 || taskSaveIndex >= pendingTasks.size()) {
             return;
@@ -601,22 +586,24 @@ public class ScheduleSetupActivity extends BaseActivity implements EntryValidati
         careTasksViewModel.add(pendingTasks.get(taskSaveIndex));
     }
 
-    // Clears temporary save state after success or failure.
     private void resetSaveState() {
         waitingForPlantSave = false;
         waitingForTaskSave = false;
+        saveInProgress = false;
+
+        if (btnSaveSchedule != null) btnSaveSchedule.setEnabled(true);
+        if (btnBack != null) btnBack.setEnabled(true);
+
         pendingPlant = null;
         pendingTasks.clear();
         taskSaveIndex = 0;
     }
 
-    // Uses the same light formatting style as SpeciesDetailsGuestActivity.
     private String formatLight(Specie.Light light) {
         if (light == null) return "-";
         return light.getApiValue();
     }
 
-    // Logs the user out and returns to SignInActivity.
     private void logout() {
         drawerLayout.closeDrawer(GravityCompat.END);
         currentUser = null;
@@ -624,7 +611,6 @@ public class ScheduleSetupActivity extends BaseActivity implements EntryValidati
         finish();
     }
 
-    // Closes the drawer first when the system back button is pressed.
     @Override
     public void onBackPressed() {
         if (drawerLayout != null && drawerLayout.isDrawerOpen(GravityCompat.END)) {

@@ -19,7 +19,7 @@ import com.yoav_s.helper.inputValidators.Validator;
 import com.yoav_s.model.BASE.BaseEntity;
 import com.yoav_s.model.BASE.BaseList;
 import com.yoav_s.model.BASE.IHasNameAndPicture;
-import com.uri_r.tashtit.ADPTERS.BASE.GenericAdapter;
+import com.yoav_s.tashtit.ADPTERS.BASE.GenericAdapter;
 import com.yoav_s.tashtit.R;
 import com.yoav_s.viewmodel.BASE.BaseViewModel;
 

@@ -2,10 +2,6 @@ package com.yoav_s.tashtit.ACTIVITIES;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
-import android.text.Editable;
-import android.text.TextWatcher;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.Spinner;
@@ -13,7 +9,6 @@ import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
@@ -92,7 +87,7 @@ public class GuestHomeActivity extends BaseActivity {
             public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
                 super.onScrolled(recyclerView, dx, dy);
 
-                if (dy <= 0) return; // only when user scrolls down
+                if (dy <= 0) return;
 
                 LinearLayoutManager lm = (LinearLayoutManager) recyclerView.getLayoutManager();
                 if (lm == null) return;
@@ -118,8 +113,7 @@ public class GuestHomeActivity extends BaseActivity {
                 startActivity(new Intent(this, RegisterActivity.class)));
 
         btnGuides.setOnClickListener(v ->
-                Toast.makeText(this, "Guides not implemented yet", Toast.LENGTH_SHORT).show());
-
+                startActivity(new Intent(this, GuidesActivity.class)));
         spCategory.setOnItemSelectedListener(new android.widget.AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(android.widget.AdapterView<?> parent, android.view.View view, int position, long id) {
@@ -137,7 +131,7 @@ public class GuestHomeActivity extends BaseActivity {
         });
 
 
-        adapter.setOnItemClickListener(new com.uri_r.tashtit.ADPTERS.BASE.GenericAdapter.OnItemClickListener<Specie>() {
+        adapter.setOnItemClickListener(new com.yoav_s.tashtit.ADPTERS.BASE.GenericAdapter.OnItemClickListener<Specie>() {
             @Override
             public void onItemClick(Specie item, int position) {
                 Bundle bundle = new Bundle();

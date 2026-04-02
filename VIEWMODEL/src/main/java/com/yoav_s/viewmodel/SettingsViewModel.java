@@ -28,4 +28,10 @@ public class SettingsViewModel extends BaseViewModel<Setting, Settings> {
     public void getAll() {
         getAllAscending(null, "userId");
     }
+
+    public void getByUserId(String userId) {
+        com.google.firebase.firestore.Query query =
+                repository.getCollection().whereEqualTo("userId", userId);
+        get(query);
+    }
 }

@@ -18,11 +18,6 @@ public class CareTask extends BaseEntity implements Serializable {
 
     private State state;
 
-    private String text;
-    @Exclude
-    private String photo;
-    private String photoUrl;
-
     private Timestamp nextDueAt;
     private Timestamp doneAt;
 
@@ -30,15 +25,11 @@ public class CareTask extends BaseEntity implements Serializable {
         this.state = State.SCHEDULED;
     }
 
-    public CareTask(String plantId, Type type, int everyDays, State state,
-                    String text, String photo, String photoUrl, Timestamp nextDueAt, Timestamp doneAt) {
+    public CareTask(String plantId, Type type, int everyDays, State state, Timestamp nextDueAt, Timestamp doneAt) {
         this.plantId = plantId;
         this.type = type;
         this.everyDays = everyDays;
         this.state = state;
-        this.text = text;
-        this.photo = photo;
-        this.photoUrl = photoUrl;
         this.nextDueAt = nextDueAt;
         this.doneAt = doneAt;
     }
@@ -55,16 +46,6 @@ public class CareTask extends BaseEntity implements Serializable {
     public State getState() { return state; }
     public void setState(State state) { this.state = state; }
 
-    public String getText() { return text; }
-    public void setText(String text) { this.text = text; }
-    @Exclude
-    public String getPhoto() { return photo; }
-    @Exclude
-    public void setPhoto(String photo) { this.photo = photo; }
-
-    public String getPhotoUrl() { return photoUrl; }
-    public void setPhotoUrl(String photoUrl) { this.photoUrl = photoUrl; }
-
     public Timestamp getNextDueAt() { return nextDueAt; }
     public void setNextDueAt(Timestamp nextDueAt) { this.nextDueAt = nextDueAt; }
 
@@ -76,6 +57,6 @@ public class CareTask extends BaseEntity implements Serializable {
         if (o == null || getClass() != o.getClass()) return false;
         if (!super.equals(o)) return false;
         CareTask careTask = (CareTask) o;
-        return everyDays == careTask.everyDays && Objects.equals(plantId, careTask.plantId) && type == careTask.type && state == careTask.state && Objects.equals(text, careTask.text) && Objects.equals(photo, careTask.photo) && Objects.equals(photoUrl, careTask.photoUrl) && Objects.equals(nextDueAt, careTask.nextDueAt) && Objects.equals(doneAt, careTask.doneAt);
+        return everyDays == careTask.everyDays && Objects.equals(plantId, careTask.plantId) && type == careTask.type && state == careTask.state && Objects.equals(nextDueAt, careTask.nextDueAt) && Objects.equals(doneAt, careTask.doneAt);
     }
 }

@@ -10,7 +10,6 @@ import android.widget.Toast;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationBarView;
 import com.yoav_s.model.User;
-import com.yoav_s.tashtit.ACTIVITIES.MainActivity;
 
 import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
@@ -19,7 +18,8 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
-import com.yoav_s.tashtit.ACTIVITIES.MembersActivity;
+import com.yoav_s.tashtit.ACTIVITIES.RegisterActivity;
+import com.yoav_s.tashtit.ACTIVITIES.SignInActivity;
 import com.yoav_s.tashtit.R;
 
 public abstract class BaseActivity extends AppCompatActivity {
@@ -82,13 +82,13 @@ public abstract class BaseActivity extends AppCompatActivity {
                 int itemId = item.getItemId();
 
                 if (itemId == R.id.navigation_home){
-                    navigateToActivity(MainActivity.class);
+                    navigateToActivity(SignInActivity.class);
                 }
                 else if(itemId == R.id.navigation_cities){
                     navigateToActivity(null);
                 }
                 else if(itemId == R.id.navigation_members){
-                    navigateToActivity(MembersActivity.class);
+                    navigateToActivity(RegisterActivity.class);
                 }
                 else{
 

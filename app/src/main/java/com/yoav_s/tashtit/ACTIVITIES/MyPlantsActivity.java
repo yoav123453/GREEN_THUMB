@@ -1,10 +1,20 @@
 package com.yoav_s.tashtit.ACTIVITIES;
 
 import android.content.Intent;
+import android.os.Build;
+import android.content.pm.PackageManager;
+import android.Manifest;
 import android.os.Bundle;
 import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+import com.yoav_s.tashtit.NOTIFICATIONS.TaskNotificationScheduler;
+
+
+
+
 
 import androidx.activity.EdgeToEdge;
 import androidx.core.graphics.Insets;
@@ -39,7 +49,10 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import com.yoav_s.model.HistoryNote;
+import com.yoav_s.viewmodel.HistoryNotesViewModel;
 
 public class MyPlantsActivity extends BaseActivity {
 
@@ -63,6 +76,9 @@ public class MyPlantsActivity extends BaseActivity {
 
     private MyPlantsAdapter adapter;
 
+    private HistoryNotesViewModel historyNotesViewModel;
+    private HistoryNote pendingHistoryNote = null;
+
     private final List<Plant> userPlants = new ArrayList<>();
     private final List<CareTask> allTasks = new ArrayList<>();
 
@@ -81,6 +97,7 @@ public class MyPlantsActivity extends BaseActivity {
         NONE,
         FINISH_CURRENT_TASK,
         CREATE_NEXT_TASK,
+        ADD_HISTORY_NOTE,
         DELETE_TASKS,
         DELETE_PLANT
     }
@@ -103,6 +120,7 @@ public class MyPlantsActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
 
         if (currentUser == null) {
+            Toast.makeText(this, "For signed-in/registered users only", Toast.LENGTH_SHORT).show();
             startActivity(new Intent(this, SignInActivity.class));
             finish();
             return;
@@ -130,6 +148,7 @@ public class MyPlantsActivity extends BaseActivity {
         setRecyclerView();
         setListeners();
         setViewModel();
+        requestNotificationPermissionIfNeeded();
     }
 
     @Override
@@ -155,9 +174,13 @@ public class MyPlantsActivity extends BaseActivity {
         adapter.setListener(new MyPlantsAdapter.Listener() {
             @Override
             public void onOpen(Plant plant) {
-                Toast.makeText(MyPlantsActivity.this,
-                        "Plant details activity not implemented yet",
-                        Toast.LENGTH_SHORT).show();
+                if (plant == null) {
+                    Toast.makeText(MyPlantsActivity.this, "Plant not found", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                Intent intent = new Intent(MyPlantsActivity.this, PlantDetailsActivity.class);
+                intent.putExtra(PlantDetailsActivity.EXTRA_SELECTED_PLANT, plant);
+                startActivity(intent);
             }
 
             @Override
@@ -196,22 +219,26 @@ public class MyPlantsActivity extends BaseActivity {
 
         navCalendar.setOnClickListener(v -> {
             drawerLayout.closeDrawer(GravityCompat.END);
-            Toast.makeText(this, "Calendar activity not implemented yet", Toast.LENGTH_SHORT).show();
+            launcherHelper.launchActivity(CalendarActivity.class);
+            finish();
         });
 
         navSettings.setOnClickListener(v -> {
             drawerLayout.closeDrawer(GravityCompat.END);
-            Toast.makeText(this, "Settings activity not implemented yet", Toast.LENGTH_SHORT).show();
+            launcherHelper.launchActivity(SettingsActivity.class);
+            finish();
         });
 
         navGuides.setOnClickListener(v -> {
             drawerLayout.closeDrawer(GravityCompat.END);
-            Toast.makeText(this, "Guides activity not implemented yet", Toast.LENGTH_SHORT).show();
+            launcherHelper.launchActivity(GuidesActivity.class);
+            finish();
         });
 
         navAi.setOnClickListener(v -> {
             drawerLayout.closeDrawer(GravityCompat.END);
-            Toast.makeText(this, "AI activity not implemented yet", Toast.LENGTH_SHORT).show();
+            launcherHelper.launchActivity(AIAssistantActivity.class);
+            finish();
         });
 
         navLogout.setOnClickListener(v -> logout());
@@ -221,6 +248,7 @@ public class MyPlantsActivity extends BaseActivity {
     protected void setViewModel() {
         plantsViewModel = new ViewModelProvider(this).get(PlantsViewModel.class);
         careTasksViewModel = new ViewModelProvider(this).get(CareTasksViewModel.class);
+        historyNotesViewModel = new ViewModelProvider(this).get(HistoryNotesViewModel.class);
         speciesViewModel = new ViewModelProvider(this).get(SpeciesViewModel.class);
 
         showProgressDialog(null, "Loading your plants...");
@@ -259,8 +287,13 @@ public class MyPlantsActivity extends BaseActivity {
             }
 
             if (actionMode == ActionMode.CREATE_NEXT_TASK) {
+                if (pendingHistoryNote != null) {
+                    actionMode = ActionMode.ADD_HISTORY_NOTE;
+                    historyNotesViewModel.addHistoryNote(pendingHistoryNote);
+                    return;
+                }
+
                 finishActionSuccess(actionSuccessMessage);
-                return;
             }
 
             if (actionMode == ActionMode.DELETE_TASKS) {
@@ -273,6 +306,16 @@ public class MyPlantsActivity extends BaseActivity {
                     plantsViewModel.delete(pendingPlantDelete);
                 }
             }
+        });
+        historyNotesViewModel.getSuccess().observe(this, success -> {
+            if (!actionInProgress || actionMode != ActionMode.ADD_HISTORY_NOTE) return;
+
+            if (!Boolean.TRUE.equals(success)) {
+                finishActionFailure("Task updated, but could not save history");
+                return;
+            }
+
+            finishActionSuccess(actionSuccessMessage);
         });
     }
 
@@ -439,13 +482,22 @@ public class MyPlantsActivity extends BaseActivity {
 
         pendingNextTask = buildNextOccurrence(currentTask, nextDueAt);
 
+        if (isMarkDone) {
+            pendingHistoryNote = new HistoryNote();
+            pendingHistoryNote.setPlantId(currentTask.getPlantId());
+            pendingHistoryNote.setEntryType(HistoryNote.EntryType.TASK);
+            pendingHistoryNote.setText(formatTaskType(currentTask.getType()));
+            pendingHistoryNote.setCreatedAt(actionTime);
+        } else {
+            pendingHistoryNote = null;
+        }
+
         currentTask.setState(isMarkDone ? CareTask.State.DONE : CareTask.State.SKIPPED);
         currentTask.setDoneAt(actionTime);
 
         actionInProgress = true;
         actionMode = ActionMode.FINISH_CURRENT_TASK;
 
-        // change: hide only this plant row task in the adapter while loading
         actionPlantId = plant.getIdFs();
         adapter.setHiddenNextTaskPlantId(actionPlantId);
 
@@ -477,9 +529,6 @@ public class MyPlantsActivity extends BaseActivity {
         nextTask.setType(currentTask.getType());
         nextTask.setEveryDays(currentTask.getEveryDays());
         nextTask.setState(CareTask.State.SCHEDULED);
-        nextTask.setText(currentTask.getText());
-        nextTask.setPhoto(currentTask.getPhoto());
-        nextTask.setPhotoUrl(currentTask.getPhotoUrl());
         nextTask.setNextDueAt(nextDueAt);
         nextTask.setDoneAt(null);
         return nextTask;
@@ -518,6 +567,9 @@ public class MyPlantsActivity extends BaseActivity {
         resetActionState();
         adapter.setHiddenNextTaskPlantId(null);
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+        if (currentUser != null) {
+            TaskNotificationScheduler.rescheduleAllForCurrentUser(this, currentUser);
+        }
     }
 
     private void finishActionFailure(String message) {
@@ -531,11 +583,34 @@ public class MyPlantsActivity extends BaseActivity {
         actionInProgress = false;
         actionMode = ActionMode.NONE;
         pendingNextTask = null;
+        pendingHistoryNote = null;
         actionPlantId = null;
 
         pendingTaskDeletes.clear();
         deleteTaskIndex = 0;
         pendingPlantDelete = null;
+    }
+
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (currentUser != null) {
+            TaskNotificationScheduler.rescheduleAllForCurrentUser(this, currentUser);
+        }
+    }
+
+    private void requestNotificationPermissionIfNeeded() {
+        if (Build.VERSION.SDK_INT < 33) return;
+
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
+                != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(
+                    this,
+                    new String[]{Manifest.permission.POST_NOTIFICATIONS},
+                    2001
+            );
+        }
     }
 
     private void hideLoadingIfReady() {
@@ -565,5 +640,11 @@ public class MyPlantsActivity extends BaseActivity {
             return "-";
         }
         return text.trim();
+    }
+    private String formatTaskType(CareTask.Type type) {
+        if (type == null) return "-";
+
+        String value = type.name().toLowerCase(Locale.ROOT).replace('_', ' ');
+        return value.substring(0, 1).toUpperCase(Locale.ROOT) + value.substring(1);
     }
 }

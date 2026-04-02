@@ -1,4 +1,4 @@
-package com.uri_r.tashtit.ADPTERS.BASE;
+package com.yoav_s.tashtit.ADPTERS.BASE;
 
 import android.content.Context;
 import android.graphics.Canvas;

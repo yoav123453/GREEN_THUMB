@@ -60,52 +60,74 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:gravity="center_vertical"
             android:orientation="horizontal"
-            android:weightSum="3">
+            android:weightSum="3.2">
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnEdit"
                 style="@style/Widget.Material3.Button.OutlinedButton"
                 android:layout_width="0dp"
-                android:layout_height="40dp"
-                android:layout_weight="1"
+                android:layout_height="42dp"
+                android:layout_weight="0.8"
+                android:minWidth="0dp"
+                android:minHeight="0dp"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                android:paddingStart="0dp"
+                android:paddingEnd="0dp"
                 android:text="Edit"
                 android:textAllCaps="false"
                 android:textColor="#1B5E20"
+                android:textSize="13sp"
                 android:textStyle="bold"
                 app:cornerRadius="14dp"
                 app:strokeColor="#1B5E20"
                 app:strokeWidth="1dp" />
 
             <View
-                android:layout_width="8dp"
+                android:layout_width="4dp"
                 android:layout_height="1dp" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnMarkDone"
                 android:layout_width="0dp"
-                android:layout_height="40dp"
-                android:layout_weight="1"
+                android:layout_height="42dp"
+                android:layout_weight="1.6"
+                android:minWidth="0dp"
+                android:minHeight="0dp"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                android:paddingStart="0dp"
+                android:paddingEnd="0dp"
                 android:text="Mark done"
                 android:textAllCaps="false"
                 android:textColor="#FFFFFF"
+                android:textSize="13sp"
                 android:textStyle="bold"
                 android:backgroundTint="#1B5E20"
                 app:cornerRadius="14dp" />
 
             <View
-                android:layout_width="8dp"
+                android:layout_width="4dp"
                 android:layout_height="1dp" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnSkip"
                 style="@style/Widget.Material3.Button.OutlinedButton"
                 android:layout_width="0dp"
-                android:layout_height="40dp"
-                android:layout_weight="1"
+                android:layout_height="42dp"
+                android:layout_weight="0.8"
+                android:minWidth="0dp"
+                android:minHeight="0dp"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                android:paddingStart="0dp"
+                android:paddingEnd="0dp"
                 android:text="Skip"
                 android:textAllCaps="false"
                 android:textColor="#6B7280"
+                android:textSize="13sp"
                 android:textStyle="bold"
                 app:cornerRadius="14dp"
                 app:strokeColor="#9CA3AF"

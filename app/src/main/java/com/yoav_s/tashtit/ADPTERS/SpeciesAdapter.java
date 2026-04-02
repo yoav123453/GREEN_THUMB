@@ -4,7 +4,7 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.uri_r.tashtit.ADPTERS.BASE.GenericAdapter;
+import com.yoav_s.tashtit.ADPTERS.BASE.GenericAdapter;
 import com.yoav_s.model.Specie;
 import com.yoav_s.tashtit.R;
 

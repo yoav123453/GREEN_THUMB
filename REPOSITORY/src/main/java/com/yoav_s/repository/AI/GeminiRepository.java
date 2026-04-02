@@ -46,7 +46,7 @@ public class GeminiRepository implements BaseAiRepository {
 
         // 4. יצירת אובייקט המודל הראשי של Gemini
         GenerativeModel geminiModel = new GenerativeModel(
-                "gemini-2.0-flash",         // שם המודל המדויק שמצאנו שעובד
+                "gemini-2.5-flash",         // שם המודל המדויק שמצאנו שעובד
                 BuildConfig.GEMINI_API_KEY, // מפתח ה-API הסודי שלנו
                 generationConfig,           // הגדרות ההתנהגות שיצרנו
                 safetySettings              // הגדרות הבטיחות שיצרנו

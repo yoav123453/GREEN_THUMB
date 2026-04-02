@@ -117,7 +117,6 @@ public class RegisterActivity extends BaseActivity implements EntryValidation {
     @Override
     protected void setViewModel() {
         usersViewModel = new ViewModelProvider(this).get(UsersViewModel.class);
-        // 1) observe email exists result
         usersViewModel.getEmailExists().observe(this, exists -> {
             if (!waitingForEmailCheck) return;
             waitingForEmailCheck = false;
@@ -147,7 +146,6 @@ public class RegisterActivity extends BaseActivity implements EntryValidation {
             usersViewModel.add(pendingUser);
         });
 
-        // 2) observe create user success
         usersViewModel.getSuccess().observe(this, success -> {
             if (!waitingForCreateUser) return;
             waitingForCreateUser = false;
@@ -180,13 +178,11 @@ public class RegisterActivity extends BaseActivity implements EntryValidation {
 
         String hashedPassword = PasswordUtil.hashPassword(password);
 
-        // Safety: PasswordUtil uses java.util.Base64 (API 26+). On API < 26 it returns "".
         if (hashedPassword == null || hashedPassword.isEmpty()) {
             Toast.makeText(this, "Password hashing not supported on this Android version.", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        // build user
         User.Role role = getSelectedRole();
         if (role == null) {
             // should be caught by Validator, but just in case
@@ -196,7 +192,6 @@ public class RegisterActivity extends BaseActivity implements EntryValidation {
 
         pendingUser = new User(userName, role, email, hashedPassword);
 
-        // check email exists first
         showProgressDialog(null, "Checking email...");
         waitingForEmailCheck = true;
         usersViewModel.checkEmailExists(email);
