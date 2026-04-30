@@ -363,17 +363,26 @@ public class ScheduleSetupActivity extends BaseActivity implements EntryValidati
     }
 
     private void applyTaskRow(EditText etDays, CheckBox cbTask, int days) {
-        if (days <= 0) {
+        if (days < 0) {
             etDays.setText("-");
             cbTask.setChecked(false);
             cbTask.setEnabled(false);
             cbTask.setAlpha(0.45f);
-        } else {
-            etDays.setText(String.valueOf(days));
-            cbTask.setEnabled(true);
-            cbTask.setChecked(true);
-            cbTask.setAlpha(1f);
+            return;
         }
+
+        if (days == 0) {
+            etDays.setText("0");
+            cbTask.setChecked(false);
+            cbTask.setEnabled(false);
+            cbTask.setAlpha(0.45f);
+            return;
+        }
+
+        etDays.setText(String.valueOf(days));
+        cbTask.setEnabled(true);
+        cbTask.setChecked(true);
+        cbTask.setAlpha(1f);
     }
 
     private void setupReadOnlyField(EditText editText) {

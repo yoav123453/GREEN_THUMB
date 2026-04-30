@@ -23,12 +23,10 @@ public class MyPlantsAdapter extends GenericAdapter<Plant> {
         void onSkip(Plant plant);
     }
 
-    // change: listener stays here, but NOT used inside super(...)
     private Listener listener;
 
     private String hiddenNextTaskPlantId = null;
 
-    // change: adapter gets prepared display data from activity
     private Map<String, String> speciesNameByPlantId = new HashMap<>();
     private Map<String, CareTask> nextTaskByPlantId = new HashMap<>();
 
@@ -37,7 +35,6 @@ public class MyPlantsAdapter extends GenericAdapter<Plant> {
                 items,
                 R.layout.item_my_plant,
                 holder -> {
-                    // change: GenericAdapter infrastructure usage
                     holder.putView("tvNickname", holder.itemView.findViewById(R.id.tvNickname));
                     holder.putView("tvLocation", holder.itemView.findViewById(R.id.tvLocation));
                     holder.putView("tvSpecies", holder.itemView.findViewById(R.id.tvSpecies));
@@ -47,12 +44,10 @@ public class MyPlantsAdapter extends GenericAdapter<Plant> {
                     holder.putView("btnSkip", holder.itemView.findViewById(R.id.btnSkip));
                 },
                 (holder, item, position) -> {
-                    // change: keep empty here, real binding is below in onBindViewHolder()
                 }
         );
     }
 
-    // change: binding moved here so we can safely use adapter fields
     @Override
     public void onBindViewHolder(@NonNull GenericViewHolder holder, int position) {
         super.onBindViewHolder(holder, position);
@@ -76,7 +71,6 @@ public class MyPlantsAdapter extends GenericAdapter<Plant> {
             nextTask = nextTaskByPlantId.get(plantId);
         }
 
-        // change: while a task action is loading, hide the next task only in the UI
         if (plantId != null && plantId.equals(hiddenNextTaskPlantId)) {
             nextTask = null;
         }
@@ -94,7 +88,6 @@ public class MyPlantsAdapter extends GenericAdapter<Plant> {
         btnMarkDone.setAlpha(hasNextTask ? 1f : 0.55f);
         btnSkip.setAlpha(hasNextTask ? 1f : 0.55f);
 
-        // change: item itself is NOT clickable, only the buttons are
         btnOpen.setOnClickListener(v -> {
             if (listener != null && item != null) {
                 listener.onOpen(item);

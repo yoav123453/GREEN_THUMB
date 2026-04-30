@@ -92,6 +92,7 @@ public class MyPlantsActivity extends BaseActivity {
     private boolean tasksLoaded = false;
     private boolean speciesLoaded = false;
     private boolean emptyToastShown = false;
+    private boolean overdueTasksCheckStarted = false;
 
     private enum ActionMode {
         NONE,
@@ -343,10 +344,39 @@ public class MyPlantsActivity extends BaseActivity {
             }
         });
 
+        trySkipOverdueTasksForCurrentUser();
         refreshRecyclerData();
         hideLoadingIfReady();
     }
 
+    private void trySkipOverdueTasksForCurrentUser() {
+        if (overdueTasksCheckStarted) return;
+        if (careTasksViewModel == null) return;
+        if (userPlants.isEmpty()) return;
+
+        ArrayList<String> plantIds = new ArrayList<>();
+
+        for (Plant plant : userPlants) {
+            if (plant != null && plant.getIdFs() != null && !plant.getIdFs().trim().isEmpty()) {
+                plantIds.add(plant.getIdFs());
+            }
+        }
+
+        if (plantIds.isEmpty()) return;
+
+        overdueTasksCheckStarted = true;
+        careTasksViewModel.skipOverdueScheduledTasksForPlants(plantIds, getStartOfTodayTimestamp());
+    }
+
+    private Timestamp getStartOfTodayTimestamp() {
+        Calendar calendar = Calendar.getInstance();
+        calendar.set(Calendar.HOUR_OF_DAY, 0);
+        calendar.set(Calendar.MINUTE, 0);
+        calendar.set(Calendar.SECOND, 0);
+        calendar.set(Calendar.MILLISECOND, 0);
+
+        return new Timestamp(calendar.getTime());
+    }
     private void handleTasksChanged(CareTasks tasks) {
         tasksLoaded = true;
         allTasks.clear();

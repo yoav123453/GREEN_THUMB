@@ -66,12 +66,12 @@
             android:layout_marginStart="20dp"
             android:layout_marginTop="22dp"
             android:layout_marginEnd="20dp"
-            android:layout_marginBottom="22dp"
+            android:layout_marginBottom="20dp"
             app:cardBackgroundColor="#EFFFFFFF"
             app:cardCornerRadius="24dp"
             app:cardElevation="10dp"
             app:cardUseCompatPadding="true"
-            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintBottom_toTopOf="@id/fabAddHistoryNote"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.0"
             app:layout_constraintStart_toStartOf="parent"
@@ -268,16 +268,19 @@
         <com.google.android.material.floatingactionbutton.FloatingActionButton
             android:id="@+id/fabAddHistoryNote"
             android:layout_width="wrap_content"
-            android:layout_height="80dp"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="24dp"
+            android:layout_marginBottom="28dp"
             android:contentDescription="Add note"
             android:elevation="24dp"
             android:src="@android:drawable/ic_input_add"
             app:backgroundTint="#D8C5F3"
             app:borderWidth="0dp"
+            app:fabSize="normal"
             app:tint="#5B3E96"
             app:useCompatPadding="true"
-            tools:layout_editor_absoluteX="357dp"
-            tools:layout_editor_absoluteY="647dp" />
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

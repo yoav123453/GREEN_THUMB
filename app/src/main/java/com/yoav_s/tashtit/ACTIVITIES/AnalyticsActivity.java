@@ -179,7 +179,6 @@ public class AnalyticsActivity extends BaseActivity {
 
         showProgressDialog(null, "Loading analytics...");
 
-        // important with your infrastructure: load first, then observe
         guidesViewModel.getAll();
         guideInteractionsViewModel.getAll();
 

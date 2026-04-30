@@ -8,16 +8,12 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.google.android.material.button.MaterialButton;
-import com.google.android.material.textfield.TextInputEditText;
-import com.google.android.material.textfield.TextInputLayout;
-import com.yoav_s.helper.StringUtil;
 import com.yoav_s.helper.inputValidators.EmailRule;
 import com.yoav_s.helper.inputValidators.EntryValidation;
 import com.yoav_s.helper.inputValidators.Rule;
@@ -26,11 +22,14 @@ import com.yoav_s.helper.inputValidators.Validator;
 import com.yoav_s.tashtit.ACTIVITIES.BASE.BaseActivity;
 import com.yoav_s.tashtit.R;
 import com.yoav_s.viewmodel.UsersViewModel;
+import com.yoav_s.model.Specie;
 
 public class SignInActivity extends BaseActivity implements EntryValidation {
     private UsersViewModel usersViewModel;
     private EditText etEmail, etPassword;
     private MaterialButton btnSignIn, btnRegister, btnGuestMode;
+    private boolean openAddPlantAfterAuth = false;
+    private Specie selectedSpecieForAddPlant = null;
 
 
     @Override
@@ -48,6 +47,7 @@ public class SignInActivity extends BaseActivity implements EntryValidation {
     }
     @Override
     protected void initializeActivity() {
+        readRedirectExtras();
         initializeViews();
         setViewModel();
     }
@@ -86,7 +86,12 @@ public class SignInActivity extends BaseActivity implements EntryValidation {
         btnRegister.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                startActivity(new Intent(SignInActivity.this, RegisterActivity.class));
+                Intent intent = new Intent(SignInActivity.this, RegisterActivity.class);
+                if (openAddPlantAfterAuth && selectedSpecieForAddPlant != null) {
+                    intent.putExtra("OPEN_ADD_PLANT_AFTER_AUTH", true);
+                    intent.putExtra("SELECTED_SPECIE", selectedSpecieForAddPlant);
+                }
+                startActivity(intent);
             }
         });
 
@@ -97,6 +102,17 @@ public class SignInActivity extends BaseActivity implements EntryValidation {
                 startActivity(new Intent(SignInActivity.this, GuestHomeActivity.class));
             }
         });
+    }
+    private void readRedirectExtras() {
+        Intent intent = getIntent();
+        if (intent == null) return;
+
+        openAddPlantAfterAuth = intent.getBooleanExtra("OPEN_ADD_PLANT_AFTER_AUTH", false);
+
+        Object specieObj = intent.getSerializableExtra("SELECTED_SPECIE");
+        if (specieObj instanceof Specie) {
+            selectedSpecieForAddPlant = (Specie) specieObj;
+        }
     }
     @Override
     protected void setViewModel() {
@@ -115,7 +131,21 @@ public class SignInActivity extends BaseActivity implements EntryValidation {
     }
 
     private void goToMain() {
+        if (openAddPlantAfterAuth && selectedSpecieForAddPlant != null) {
+
+            Intent myPlantsIntent = new Intent(SignInActivity.this, MyPlantsActivity.class);
+            myPlantsIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+
+            Intent addPlantIntent = new Intent(SignInActivity.this, AddPlantActivity.class);
+            addPlantIntent.putExtra("SELECTED_SPECIE", selectedSpecieForAddPlant);
+
+            startActivities(new Intent[]{myPlantsIntent, addPlantIntent});
+            finish();
+            return;
+        }
+
         Intent intent = new Intent(SignInActivity.this, MyPlantsActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(intent);
         finish();
     }

@@ -6,7 +6,7 @@ import com.yoav_s.model.BASE.BaseEntity;
 import java.util.Objects;
 import java.io.Serializable;
 
-public class    Reminder extends BaseEntity implements Serializable {
+public class Reminder extends BaseEntity implements Serializable {
     private String userId;
     private String plantId;
     private String taskId;

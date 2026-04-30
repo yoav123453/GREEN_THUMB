@@ -55,7 +55,6 @@ public class SpeciesApiViewModel extends AndroidViewModel {
             default: selectedCategory = null; // All
         }
 
-        // ✅ Like your original: changing category triggers a re-search
         searchSpecies(userQuery);
     }
 
@@ -102,7 +101,6 @@ public class SpeciesApiViewModel extends AndroidViewModel {
     }
 
     private String buildEffectiveQuery() {
-        // ✅ category keyword fetch to ensure the API returns that category
         String keyword = null;
 
         if (selectedCategory != null) {
@@ -111,12 +109,12 @@ public class SpeciesApiViewModel extends AndroidViewModel {
                 case SHRUB: keyword = "shrub"; break;
                 case FLOWER: keyword = "flower"; break;
                 case GRASS: keyword = "grass"; break;
-                case OTHER: keyword = ""; break; // Other can't be searched reliably
+                case OTHER: keyword = ""; break;
             }
         }
 
-        if (selectedCategory == null) return userQuery; // All
-        if (selectedCategory == Specie.Category.OTHER) return userQuery; // Other = show "unclassified" locally? (see below)
+        if (selectedCategory == null) return userQuery;
+        if (selectedCategory == Specie.Category.OTHER) return userQuery;
 
         if (keyword == null) return userQuery;
         if (userQuery.isEmpty()) return keyword;
@@ -136,7 +134,7 @@ public class SpeciesApiViewModel extends AndroidViewModel {
 
                 if (results == null || results.isEmpty()) {
                     isLastPage = true;
-                    updateDisplayedList(); // still update (especially for Other)
+                    updateDisplayedList();
                     return;
                 }
 
@@ -148,8 +146,6 @@ public class SpeciesApiViewModel extends AndroidViewModel {
                 for (Specie s : results) {
                     if (s == null) continue;
 
-                    // ✅ If user is filtering by a category (except Other),
-                    // force the category label so UI shows it consistently
                     if (selectedCategory != null && selectedCategory != Specie.Category.OTHER) {
                         s.setCategory(selectedCategory);
                     }
@@ -186,9 +182,6 @@ public class SpeciesApiViewModel extends AndroidViewModel {
     private void updateDisplayedList() {
         List<Specie> out = new ArrayList<>();
 
-        // ✅ Filtering:
-        // - For Tree/Shrub/Flower/Grass: show what we fetched (already forced category)
-        // - For Other: show items where repository classified as OTHER
         if (selectedCategory == null) {
             out.addAll(allItems);
         } else if (selectedCategory == Specie.Category.OTHER) {

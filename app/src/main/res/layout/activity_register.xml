@@ -8,7 +8,6 @@
     android:layoutDirection="ltr"
     tools:context=".ACTIVITIES.RegisterActivity">
 
-    <!-- Background IMAGE -->
     <ImageView
         android:id="@+id/ivBackground"
         android:layout_width="match_parent"
@@ -17,7 +16,6 @@
         android:scaleType="centerCrop"
         android:src="@drawable/leaves_bg" />
 
-    <!-- Subtle dark scrim for readability -->
     <View
         android:id="@+id/bgScrim"
         android:layout_width="match_parent"
@@ -61,7 +59,6 @@
                     android:orientation="vertical"
                     android:padding="22dp">
 
-                    <!-- Title -->
                     <TextView
                         android:id="@+id/tvTitle"
                         android:layout_width="match_parent"
@@ -84,7 +81,6 @@
                         android:layout_width="match_parent"
                         android:layout_height="18dp" />
 
-                    <!-- User name -->
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -111,7 +107,6 @@
                         android:layout_width="match_parent"
                         android:layout_height="12dp" />
 
-                    <!-- Role (Spinner) -->
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -132,7 +127,6 @@
                         android:layout_width="match_parent"
                         android:layout_height="12dp" />
 
-                    <!-- Email -->
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -161,7 +155,6 @@
                         android:layout_width="match_parent"
                         android:layout_height="12dp" />
 
-                    <!-- Password -->
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -190,7 +183,6 @@
                         android:layout_width="match_parent"
                         android:layout_height="12dp" />
 
-                    <!-- ReType Password -->
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -226,7 +218,6 @@
                         android:layout_width="match_parent"
                         android:layout_height="20dp" />
 
-                    <!-- Buttons row -->
                     <LinearLayout
                         android:id="@+id/rowButtons"
                         android:layout_width="match_parent"

@@ -8,7 +8,6 @@
     android:layout_height="match_parent"
     android:layoutDirection="ltr">
 
-    <!-- Background IMAGE -->
     <ImageView
         android:id="@+id/ivBackground"
         android:layout_width="match_parent"
@@ -17,8 +16,7 @@
         android:scaleType="centerCrop"
         android:src="@drawable/leaves_bg" />
 
-    <!-- Replace the big white rectangle overlay with a VERY subtle dark scrim -->
-    <!-- (keeps readability but doesn't look like a white screen) -->
+
     <View
         android:id="@+id/bgScrim"
         android:layout_width="match_parent"

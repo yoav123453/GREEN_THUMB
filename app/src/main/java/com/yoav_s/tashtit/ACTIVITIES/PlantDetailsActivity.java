@@ -90,6 +90,7 @@ public class PlantDetailsActivity extends BaseActivity {
     private boolean speciesLoaded = false;
     private boolean emptyUpcomingToastShown = false;
     private boolean emptyFutureToastShown = false;
+    private boolean overdueTasksCheckStarted = false;
 
     private HistoryNotesViewModel historyNotesViewModel;
     private HistoryNote pendingHistoryNote = null;
@@ -323,6 +324,7 @@ public class PlantDetailsActivity extends BaseActivity {
 
         careTasksViewModel.getAll();
         speciesViewModel.getAll();
+        trySkipOverdueTasksForSelectedPlant();
 
         careTasksViewModel.getLiveDataCollection().observe(this, this::handleTasksChanged);
         speciesViewModel.getLiveDataCollection().observe(this, this::handleSpeciesChanged);
@@ -374,6 +376,28 @@ public class PlantDetailsActivity extends BaseActivity {
 
             finishActionSuccess(actionSuccessMessage);
         });
+    }
+
+    private void trySkipOverdueTasksForSelectedPlant() {
+        if (overdueTasksCheckStarted) return;
+        if (careTasksViewModel == null) return;
+        if (selectedPlant == null || selectedPlant.getIdFs() == null || selectedPlant.getIdFs().trim().isEmpty()) return;
+
+        ArrayList<String> plantIds = new ArrayList<>();
+        plantIds.add(selectedPlant.getIdFs());
+
+        overdueTasksCheckStarted = true;
+        careTasksViewModel.skipOverdueScheduledTasksForPlants(plantIds, getStartOfTodayTimestamp());
+    }
+
+    private Timestamp getStartOfTodayTimestamp() {
+        Calendar calendar = Calendar.getInstance();
+        calendar.set(Calendar.HOUR_OF_DAY, 0);
+        calendar.set(Calendar.MINUTE, 0);
+        calendar.set(Calendar.SECOND, 0);
+        calendar.set(Calendar.MILLISECOND, 0);
+
+        return new Timestamp(calendar.getTime());
     }
 
     private void handleSpeciesChanged(Species species) {

@@ -36,6 +36,7 @@ public class SpeciesDetailsGuestActivity extends BaseActivity {
     private LauncherHelper launcherHelper;
     private SpeciesApiViewModel vm;
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -86,7 +87,6 @@ public class SpeciesDetailsGuestActivity extends BaseActivity {
     @Override
     protected void setListeners() {
         btnBack.setOnClickListener(v -> finish());
-
         btnSignInToAdd.setOnClickListener(v -> {
             if (specie == null) {
                 Toast.makeText(this, "Specie not found", Toast.LENGTH_SHORT).show();
@@ -94,7 +94,9 @@ public class SpeciesDetailsGuestActivity extends BaseActivity {
             }
 
             Bundle bundle = new Bundle();
-            bundle.putSerializable("SPECIE", specie);
+            bundle.putBoolean("OPEN_ADD_PLANT_AFTER_AUTH", true);
+            bundle.putSerializable("SELECTED_SPECIE", specie);
+
             launcherHelper.launchActivity(SignInActivity.class, bundle);
         });
 
@@ -105,7 +107,9 @@ public class SpeciesDetailsGuestActivity extends BaseActivity {
             }
 
             Bundle bundle = new Bundle();
-            bundle.putSerializable("SPECIE", specie);
+            bundle.putBoolean("OPEN_ADD_PLANT_AFTER_AUTH", true);
+            bundle.putSerializable("SELECTED_SPECIE", specie);
+
             launcherHelper.launchActivity(RegisterActivity.class, bundle);
         });
     }

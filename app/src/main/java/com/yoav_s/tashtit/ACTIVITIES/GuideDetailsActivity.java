@@ -315,7 +315,6 @@ public class GuideDetailsActivity extends BaseActivity {
 
         showProgressDialog(null, "Loading guide...");
 
-        // important: collection loaders first, then observe
         guideInteractionsViewModel.getByGuide(selectedGuideId);
         usersViewModel.getAll();
         guidesViewModel.get(selectedGuideId);

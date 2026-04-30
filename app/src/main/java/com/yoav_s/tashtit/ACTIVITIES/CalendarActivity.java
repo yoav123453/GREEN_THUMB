@@ -110,6 +110,8 @@ public class CalendarActivity extends BaseActivity {
     private String actionFailMessage = "Action failed";
     private String busyTaskId = null;
 
+    private boolean overdueTasksCheckStarted = false;
+
     private final SimpleDateFormat headerDateFormat =
             new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
 
@@ -337,8 +339,38 @@ public class CalendarActivity extends BaseActivity {
         });
 
         buildPlantNicknameMap();
+        trySkipOverdueTasksForCurrentUser();
         refreshRecyclerData();
         hideLoadingIfReady();
+    }
+
+    private void trySkipOverdueTasksForCurrentUser() {
+        if (overdueTasksCheckStarted) return;
+        if (careTasksViewModel == null) return;
+        if (userPlants.isEmpty()) return;
+
+        ArrayList<String> plantIds = new ArrayList<>();
+
+        for (Plant plant : userPlants) {
+            if (plant != null && plant.getIdFs() != null && !plant.getIdFs().trim().isEmpty()) {
+                plantIds.add(plant.getIdFs());
+            }
+        }
+
+        if (plantIds.isEmpty()) return;
+
+        overdueTasksCheckStarted = true;
+        careTasksViewModel.skipOverdueScheduledTasksForPlants(plantIds, getStartOfTodayTimestamp());
+    }
+
+    private Timestamp getStartOfTodayTimestamp() {
+        Calendar calendar = Calendar.getInstance();
+        calendar.set(Calendar.HOUR_OF_DAY, 0);
+        calendar.set(Calendar.MINUTE, 0);
+        calendar.set(Calendar.SECOND, 0);
+        calendar.set(Calendar.MILLISECOND, 0);
+
+        return new Timestamp(calendar.getTime());
     }
 
     private void handleTasksChanged(CareTasks tasks) {

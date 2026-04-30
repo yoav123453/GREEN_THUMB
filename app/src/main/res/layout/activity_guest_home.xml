@@ -7,7 +7,6 @@
     android:layout_height="match_parent"
     tools:context=".ACTIVITIES.GuestHomeActivity">
 
-    <!-- Background -->
     <ImageView
         android:id="@+id/ivBackground"
         android:layout_width="0dp"
@@ -20,7 +19,6 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
-    <!-- Stronger scrim so text won't get swallowed -->
     <View
         android:id="@+id/bgScrim"
         android:layout_width="0dp"
@@ -31,7 +29,6 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
-    <!-- Title (with its own subtle background via card for readability) -->
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/cardTitle"
         android:layout_width="0dp"
@@ -62,7 +59,6 @@
             android:textColor="#1B5E20" />
     </com.google.android.material.card.MaterialCardView>
 
-    <!-- Search + Category panel (small, modern, not full-screen card) -->
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/cardFilters"
         android:layout_width="0dp"
@@ -93,7 +89,6 @@
                 android:textSize="13sp"
                 android:textColor="#374151" />
 
-            <!-- Rounded field using a card (no drawable file needed) -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="48dp"
@@ -160,7 +155,6 @@
         </LinearLayout>
     </com.google.android.material.card.MaterialCardView>
 
-    <!-- RecyclerView container -->
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/cardList"
         android:layout_width="0dp"
@@ -188,7 +182,6 @@
             tools:listitem="@android:layout/simple_list_item_1" />
     </com.google.android.material.card.MaterialCardView>
 
-    <!-- Bottom bar (clean, consistent) -->
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/bottomBar"
         android:layout_width="0dp"

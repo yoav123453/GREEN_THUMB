@@ -279,7 +279,6 @@
             </androidx.core.widget.NestedScrollView>
         </com.google.android.material.card.MaterialCardView>
 
-        <!-- Bottom fixed white rectangle for buttons -->
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/cardButtons"
             android:layout_width="0dp"

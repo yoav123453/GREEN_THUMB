@@ -29,6 +29,7 @@ import com.yoav_s.model.User;
 import com.yoav_s.tashtit.ACTIVITIES.BASE.BaseActivity;
 import com.yoav_s.tashtit.R;
 import com.yoav_s.viewmodel.UsersViewModel;
+import com.yoav_s.model.Specie;
 
 public class RegisterActivity extends BaseActivity implements EntryValidation {
     private UsersViewModel usersViewModel;
@@ -38,6 +39,10 @@ public class RegisterActivity extends BaseActivity implements EntryValidation {
 
     private boolean waitingForEmailCheck = false;
     private boolean waitingForCreateUser = false;
+
+    private boolean openAddPlantAfterAuth = false;
+    private Specie selectedSpecieForAddPlant = null;
+
     private User pendingUser = null;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,6 +59,7 @@ public class RegisterActivity extends BaseActivity implements EntryValidation {
     }
     @Override
     protected void initializeActivity() {
+        readRedirectExtras();
         initializeViews();
         setViewModel();
     }
@@ -114,6 +120,18 @@ public class RegisterActivity extends BaseActivity implements EntryValidation {
         btnCancel.setOnClickListener(v -> finish());
     }
 
+    private void readRedirectExtras() {
+        Intent intent = getIntent();
+        if (intent == null) return;
+
+        openAddPlantAfterAuth = intent.getBooleanExtra("OPEN_ADD_PLANT_AFTER_AUTH", false);
+
+        Object specieObj = intent.getSerializableExtra("SELECTED_SPECIE");
+        if (specieObj instanceof Specie) {
+            selectedSpecieForAddPlant = (Specie) specieObj;
+        }
+    }
+
     @Override
     protected void setViewModel() {
         usersViewModel = new ViewModelProvider(this).get(UsersViewModel.class);
@@ -134,7 +152,6 @@ public class RegisterActivity extends BaseActivity implements EntryValidation {
                 return;
             }
 
-            // email not exists => create user
             if (pendingUser == null) {
                 hideProgressDialog();
                 Toast.makeText(this, "Unexpected error. Try again.", Toast.LENGTH_SHORT).show();
@@ -185,7 +202,6 @@ public class RegisterActivity extends BaseActivity implements EntryValidation {
 
         User.Role role = getSelectedRole();
         if (role == null) {
-            // should be caught by Validator, but just in case
             Toast.makeText(this, "Please select a role", Toast.LENGTH_SHORT).show();
             return;
         }
@@ -205,7 +221,21 @@ public class RegisterActivity extends BaseActivity implements EntryValidation {
     }
 
     private void goToMain() {
+        if (openAddPlantAfterAuth && selectedSpecieForAddPlant != null) {
+
+            Intent myPlantsIntent = new Intent(RegisterActivity.this, MyPlantsActivity.class);
+            myPlantsIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+
+            Intent addPlantIntent = new Intent(RegisterActivity.this, AddPlantActivity.class);
+            addPlantIntent.putExtra("SELECTED_SPECIE", selectedSpecieForAddPlant);
+
+            startActivities(new Intent[]{myPlantsIntent, addPlantIntent});
+            finish();
+            return;
+        }
+
         Intent intent = new Intent(RegisterActivity.this, MyPlantsActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(intent);
         finish();
     }

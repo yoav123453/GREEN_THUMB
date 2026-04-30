@@ -23,6 +23,7 @@ import retrofit2.Response;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
+
 public class SpeciesApiRepository {
     public interface CallbackResult {
         void onSuccess(List<Specie> results, int page, int lastPage);
@@ -90,39 +91,199 @@ public class SpeciesApiRepository {
                     @Override
                     public void onResponse(Call<PerenualSpeciesDetailsDto> call,
                                            Response<PerenualSpeciesDetailsDto> response) {
+
                         if (!response.isSuccessful() || response.body() == null) {
-                            String details = "";
-                            try {
-                                if (response.errorBody() != null) details = response.errorBody().string();
-                            } catch (Exception ignored) {
-                            }
-                            cb.onError("API error: " + response.code() + (details.isEmpty() ? "" : ("\n" + details)));
+                            Log.e("PERENUAL_DETAILS", "speciesDetails failed with code: " + response.code());
+
+                            fillMissingCareTasks(baseSpecie);
+                            fillMissingLight(baseSpecie);
+                            cb.onSuccess(baseSpecie);
                             return;
                         }
 
                         try {
                             PerenualSpeciesDetailsDto dto = response.body();
 
-                            baseSpecie.setLight(mapLight(asStringList(dto.sunlight)));
-                            baseSpecie.setBaselineCarewateringDays(guessWaterDays(dto.watering));
-                            baseSpecie.setBaselineCarefertilizeDays(deriveFertilizeDays(dto, baseSpecie));
-                            baseSpecie.setBaselineCaresprayDays(deriveSprayDays(dto, baseSpecie));
-                            baseSpecie.setBaselineCarepruneDays(derivePruneDays(dto, baseSpecie));
-                            baseSpecie.setBaselineCarerepotDays(deriveRepotDays(dto, baseSpecie));
+                            applyDetailsToSpecie(baseSpecie, dto);
+
+                            fillMissingCareTasks(baseSpecie);
+                            fillMissingLight(baseSpecie);
 
                             cb.onSuccess(baseSpecie);
                         } catch (Exception e) {
                             Log.e("PERENUAL_EXCEPTION", "details mapping failed", e);
-                            cb.onError(e.toString());
+
+                            fillMissingCareTasks(baseSpecie);
+                            fillMissingLight(baseSpecie);
+                            cb.onSuccess(baseSpecie);
                         }
                     }
 
                     @Override
                     public void onFailure(Call<PerenualSpeciesDetailsDto> call, Throwable t) {
                         Log.e("PERENUAL_EXCEPTION", "speciesDetails failed", t);
-                        cb.onError(t.toString());
+
+                        fillMissingCareTasks(baseSpecie);
+                        fillMissingLight(baseSpecie);
+                        cb.onSuccess(baseSpecie);
                     }
                 });
+    }
+    private void applyDetailsToSpecie(Specie specie, PerenualSpeciesDetailsDto dto) {
+        if (specie == null || dto == null) return;
+
+        specie.setLight(mapLight(asStringList(dto.sunlight)));
+        specie.setBaselineCarewateringDays(guessWaterDays(dto.watering));
+        specie.setBaselineCarefertilizeDays(deriveFertilizeDays(dto, specie));
+        specie.setBaselineCaresprayDays(deriveSprayDays(dto, specie));
+        specie.setBaselineCarepruneDays(derivePruneDays(dto, specie));
+        specie.setBaselineCarerepotDays(deriveRepotDays(dto, specie));
+    }
+
+    private void fillMissingCareTasks(Specie specie) {
+        if (specie == null) return;
+
+        if (specie.getBaselineCarewateringDays() < 0) {
+            specie.setBaselineCarewateringDays(getDefaultWaterDays(specie));
+        }
+
+        if (specie.getBaselineCarefertilizeDays() < 0) {
+            specie.setBaselineCarefertilizeDays(getDefaultFertilizeDays(specie));
+        }
+
+        if (specie.getBaselineCaresprayDays() < 0) {
+            specie.setBaselineCaresprayDays(getDefaultSprayDays(specie));
+        }
+
+        if (specie.getBaselineCarepruneDays() < 0) {
+            specie.setBaselineCarepruneDays(getDefaultPruneDays(specie));
+        }
+
+        if (specie.getBaselineCarerepotDays() < 0) {
+            specie.setBaselineCarerepotDays(getDefaultRepotDays(specie));
+        }
+    }
+    private void fillMissingLight(Specie specie) {
+        if (specie == null) return;
+
+        if (specie.getLight() != null) {
+            return;
+        }
+
+        specie.setLight(getDefaultLight(specie));
+    }
+
+    private Specie.Light getDefaultLight(Specie specie) {
+        if (specie == null || specie.getCategory() == null) {
+            return Specie.Light.PART_SHADE;
+        }
+
+        switch (specie.getCategory()) {
+            case TREE:
+                return Specie.Light.FULL_SUN;
+
+            case SHRUB:
+                return Specie.Light.SUN_PART_SHADE;
+
+            case FLOWER:
+                return Specie.Light.FULL_SUN;
+
+            case GRASS:
+                return Specie.Light.FULL_SUN;
+
+            case OTHER:
+            default:
+                return Specie.Light.PART_SHADE;
+        }
+    }
+    private int getDefaultWaterDays(Specie specie) {
+        if (specie == null || specie.getCategory() == null) return 7;
+
+        switch (specie.getCategory()) {
+            case TREE:
+                return 10;
+            case SHRUB:
+                return 7;
+            case FLOWER:
+                return 4;
+            case GRASS:
+                return 3;
+            case OTHER:
+            default:
+                return 7;
+        }
+    }
+
+    private int getDefaultFertilizeDays(Specie specie) {
+        if (specie == null || specie.getCategory() == null) return 45;
+
+        switch (specie.getCategory()) {
+            case TREE:
+                return 60;
+            case SHRUB:
+                return 45;
+            case FLOWER:
+                return 30;
+            case GRASS:
+                return 30;
+            case OTHER:
+            default:
+                return 45;
+        }
+    }
+
+    private int getDefaultPruneDays(Specie specie) {
+        if (specie == null || specie.getCategory() == null) return 180;
+
+        switch (specie.getCategory()) {
+            case TREE:
+                return 365;
+            case SHRUB:
+                return 180;
+            case FLOWER:
+                return 120;
+            case GRASS:
+                return 90;
+            case OTHER:
+            default:
+                return 180;
+        }
+    }
+
+    private int getDefaultRepotDays(Specie specie) {
+        if (specie == null || specie.getCategory() == null) return 365;
+
+        switch (specie.getCategory()) {
+            case TREE:
+                return 730;
+            case SHRUB:
+                return 730;
+            case FLOWER:
+                return 365;
+            case GRASS:
+                return 540;
+            case OTHER:
+            default:
+                return 365;
+        }
+    }
+
+    private int getDefaultSprayDays(Specie specie) {
+        if (specie == null || specie.getCategory() == null) return 14;
+
+        switch (specie.getCategory()) {
+            case TREE:
+                return 30;
+            case SHRUB:
+                return 14;
+            case FLOWER:
+                return 7;
+            case GRASS:
+                return 21;
+            case OTHER:
+            default:
+                return 14;
+        }
     }
 
     private Specie mapDtoToSpecie(PerenualSpeciesDto dto) {
@@ -131,17 +292,22 @@ public class SpeciesApiRepository {
 
         Specie.Category category = mapCategory(dto);
 
-        // list endpoint = basic data only
-        Specie.Light light = null;
-        int waterDays = 7;
+        Specie s = new Specie(
+                name,
+                category,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                null
+        );
 
-        int fertilizeDays = -1;
-        int sprayDays = -1;
-        int pruneDays = -1;
-        int repotDays = -1;
-
-        Specie s = new Specie(name, category, waterDays, fertilizeDays, sprayDays, pruneDays, repotDays, light);
         s.setApiId(dto.id);
+
+        fillMissingCareTasks(s);
+        fillMissingLight(s);
+
         return s;
     }
 
