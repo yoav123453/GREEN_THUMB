@@ -8,6 +8,8 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.yoav_s.helper.NetworkUtils;
 import com.yoav_s.tashtit.NOTIFICATIONS.TaskNotificationScheduler;
 
 
@@ -175,11 +177,17 @@ public class EditTaskActivity extends BaseActivity implements EntryValidation {
         tvRepeatEvery.setOnClickListener(v -> openRepeatEveryDialog());
 
         btnSave.setOnClickListener(v -> {
+            if (!NetworkUtils.requireInternet(this)) {
+                return;
+            }
             if (!validate()) return;
             saveTaskChanges();
         });
 
         btnDelete.setOnClickListener(v -> {
+            if (!NetworkUtils.requireInternet(this)) {
+                return;
+            }
             AlertDialogHelper.showDelete(
                     this,
                     "Are you sure you want to remove this care task type from the plant schedule?",

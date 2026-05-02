@@ -53,6 +53,7 @@ import java.util.Locale;
 import java.util.Map;
 import com.yoav_s.model.HistoryNote;
 import com.yoav_s.viewmodel.HistoryNotesViewModel;
+import com.yoav_s.helper.NetworkUtils;
 
 public class MyPlantsActivity extends BaseActivity {
 
@@ -507,6 +508,10 @@ public class MyPlantsActivity extends BaseActivity {
             return;
         }
 
+        if (!NetworkUtils.requireInternet(MyPlantsActivity.this)) {
+            return;
+        }
+
         Timestamp actionTime = Timestamp.now();
         Timestamp nextDueAt = calculateNextDueAt(currentTask);
 
@@ -566,6 +571,9 @@ public class MyPlantsActivity extends BaseActivity {
 
     private void startDeletePlantFlow(Plant plant) {
         if (plant == null || plant.getIdFs() == null) return;
+        if (!NetworkUtils.requireInternet(MyPlantsActivity.this)) {
+            return;
+        }
 
         pendingPlantDelete = plant;
         pendingTaskDeletes.clear();

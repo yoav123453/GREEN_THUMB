@@ -8,6 +8,8 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.yoav_s.helper.NetworkUtils;
 import com.yoav_s.tashtit.NOTIFICATIONS.TaskNotificationScheduler;
 
 
@@ -228,6 +230,9 @@ public class ScheduleSetupActivity extends BaseActivity implements EntryValidati
         btnBack.setOnClickListener(v -> finish());
 
         btnSaveSchedule.setOnClickListener(v -> {
+            if (!NetworkUtils.requireInternet(this)) {
+                return;
+            }
             if (!validate()) return;
             saveSchedule();
         });

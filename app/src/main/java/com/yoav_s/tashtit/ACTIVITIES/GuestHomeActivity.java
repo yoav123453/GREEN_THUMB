@@ -18,6 +18,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.button.MaterialButton;
 import com.yoav_s.helper.LauncherHelper;
+import com.yoav_s.helper.NetworkUtils;
 import com.yoav_s.model.Specie;
 import com.yoav_s.tashtit.ACTIVITIES.BASE.BaseActivity;
 import com.yoav_s.tashtit.ADPTERS.SpeciesAdapter;
@@ -97,6 +98,10 @@ public class GuestHomeActivity extends BaseActivity {
 
                 boolean loading = Boolean.TRUE.equals(vm.getLoading().getValue());
                 if (!loading && !vm.isLastPage() && lastVisible >= total - 4) {
+                    if (!NetworkUtils.requireInternet(GuestHomeActivity.this)) {
+                        return;
+                    }
+
                     vm.loadNextPage();
                 }
             }
@@ -118,7 +123,13 @@ public class GuestHomeActivity extends BaseActivity {
             @Override
             public void onItemSelected(android.widget.AdapterView<?> parent, android.view.View view, int position, long id) {
                 String selected = (String) spCategory.getSelectedItem();
-                if (vm != null) vm.setCategory(selected);
+                if (vm != null)
+                {
+                    if (!NetworkUtils.requireInternet(GuestHomeActivity.this)) {
+                        return;
+                    }
+                    vm.setCategory(selected);
+                }
             }
 
             @Override
@@ -126,6 +137,9 @@ public class GuestHomeActivity extends BaseActivity {
         });
 
         btnSearchSpecies.setOnClickListener(v -> {
+            if (!NetworkUtils.requireInternet(GuestHomeActivity.this)) {
+                return;
+            }
             String q = etSearchSpecies.getText().toString();
             vm.searchSpecies(q);
         });
@@ -145,9 +159,6 @@ public class GuestHomeActivity extends BaseActivity {
     protected void setViewModel() {
         vm = new ViewModelProvider(this).get(SpeciesApiViewModel.class);
 
-        String selected = (String) spCategory.getSelectedItem();
-        if (selected != null) vm.setCategory(selected);
-
         vm.getLoading().observe(this, loading -> {
             if (Boolean.TRUE.equals(loading)) showProgressDialog(null, "Loading species...");
             else hideProgressDialog();
@@ -161,6 +172,15 @@ public class GuestHomeActivity extends BaseActivity {
             }
         });
 
-        vm.searchSpecies("");
+        if (!NetworkUtils.requireInternet(GuestHomeActivity.this)) {
+            return;
+        }
+
+        String selected = (String) spCategory.getSelectedItem();
+        if (selected != null) {
+            vm.setCategory(selected);
+        } else {
+            vm.searchSpecies("");
+        }
     }
 }

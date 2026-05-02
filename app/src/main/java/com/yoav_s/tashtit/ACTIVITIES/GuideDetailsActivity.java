@@ -24,6 +24,7 @@ import com.google.android.material.card.MaterialCardView;
 import com.google.firebase.Timestamp;
 import com.yoav_s.helper.AlertDialogHelper;
 import com.yoav_s.helper.LauncherHelper;
+import com.yoav_s.helper.NetworkUtils;
 import com.yoav_s.model.Guide;
 import com.yoav_s.model.GuideInteraction;
 import com.yoav_s.model.GuideInteractions;
@@ -263,11 +264,26 @@ public class GuideDetailsActivity extends BaseActivity {
 
         btnBack.setOnClickListener(v -> finish());
 
-        btnLikeGuide.setOnClickListener(v -> onLikeClicked());
+        btnLikeGuide.setOnClickListener(v ->{
+            if (!NetworkUtils.requireInternet(this)) {
+                return;
+            }
+            onLikeClicked();
+        });
 
-        btnRateGuide.setOnClickListener(v -> onRateClicked());
+        btnRateGuide.setOnClickListener(v ->{
+            if (!NetworkUtils.requireInternet(this)) {
+                return;
+            }
+            onRateClicked();
+        });
 
-        btnSendComment.setOnClickListener(v -> onSendCommentClicked());
+        btnSendComment.setOnClickListener(v ->{
+            if (!NetworkUtils.requireInternet(this)) {
+                return;
+            }
+            onSendCommentClicked();
+        });
 
         navMyPlants.setOnClickListener(v -> {
             drawerLayout.closeDrawer(GravityCompat.END);
@@ -639,6 +655,9 @@ public class GuideDetailsActivity extends BaseActivity {
     }
 
     private void deleteCurrentUserComment(GuideInteraction interaction) {
+        if (!NetworkUtils.requireInternet(this)) {
+            return;
+        }
         GuideInteraction draft = buildInteractionDraft();
         if (draft == null) {
             Toast.makeText(this, "Could not delete comment", Toast.LENGTH_SHORT).show();

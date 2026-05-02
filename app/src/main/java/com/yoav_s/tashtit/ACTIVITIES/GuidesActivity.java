@@ -21,6 +21,7 @@ import com.google.android.material.button.MaterialButton;
 import com.google.android.material.card.MaterialCardView;
 import com.yoav_s.helper.AlertDialogHelper;
 import com.yoav_s.helper.LauncherHelper;
+import com.yoav_s.helper.NetworkUtils;
 import com.yoav_s.model.Guide;
 import com.yoav_s.model.Guides;
 import com.yoav_s.model.User;
@@ -146,6 +147,9 @@ public class GuidesActivity extends BaseActivity {
 
             @Override
             public void onItemClicked(Guide guide) {
+                if (!NetworkUtils.requireInternet(GuidesActivity.this)) {
+                    return;
+                }
                 if (guide == null || currentUser == null || currentUser.getIdFs() == null) {
                     return;
                 }

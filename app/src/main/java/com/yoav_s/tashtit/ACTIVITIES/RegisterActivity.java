@@ -18,6 +18,7 @@ import androidx.core.view.WindowInsetsCompat;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.google.android.material.button.MaterialButton;
+import com.yoav_s.helper.NetworkUtils;
 import com.yoav_s.helper.PasswordUtil;
 import com.yoav_s.helper.inputValidators.EmailRule;
 import com.yoav_s.helper.inputValidators.EntryValidation;
@@ -115,7 +116,12 @@ public class RegisterActivity extends BaseActivity implements EntryValidation {
     }
     @Override
     protected void setListeners() {
-        btnRegister.setOnClickListener(v -> doRegister());
+        btnRegister.setOnClickListener(v ->{
+            if (!NetworkUtils.requireInternet(RegisterActivity.this)) {
+                return;
+            }
+            doRegister();
+        });
 
         btnCancel.setOnClickListener(v -> finish());
     }

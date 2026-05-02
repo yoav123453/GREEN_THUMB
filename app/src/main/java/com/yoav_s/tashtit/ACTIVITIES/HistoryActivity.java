@@ -25,6 +25,7 @@ import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.Timestamp;
 import com.yoav_s.helper.LauncherHelper;
+import com.yoav_s.helper.NetworkUtils;
 import com.yoav_s.model.HistoryNote;
 import com.yoav_s.model.HistoryNotes;
 import com.yoav_s.model.Plant;
@@ -181,6 +182,10 @@ public class HistoryActivity extends BaseActivity {
         btnCancelNote.setOnClickListener(v -> clearComposer(true));
 
         btnAddPhoto.setOnClickListener(v ->
+        {
+            if (!NetworkUtils.requireInternet(this)) {
+                return;
+            }
                 launcherHelper.takePhotoWithPermissionCheck(bitmap -> {
                     if (bitmap == null) {
                         Toast.makeText(this, "Could not take photo", Toast.LENGTH_SHORT).show();
@@ -192,10 +197,15 @@ public class HistoryActivity extends BaseActivity {
 
                     updatePhotoButtonState();
                     Toast.makeText(this, "Photo attached", Toast.LENGTH_SHORT).show();
-                })
-        );
+                });
+    });
 
-        btnAddNote.setOnClickListener(v -> addHistoryNote());
+        btnAddNote.setOnClickListener(v ->{
+            if (!NetworkUtils.requireInternet(this)) {
+                return;
+            }
+            addHistoryNote();
+        });
 
         navMyPlants.setOnClickListener(v -> {
             drawerLayout.closeDrawer(GravityCompat.END);

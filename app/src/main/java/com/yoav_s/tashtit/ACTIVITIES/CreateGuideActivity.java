@@ -20,6 +20,7 @@ import androidx.lifecycle.ViewModelProvider;
 import com.google.android.material.button.MaterialButton;
 import com.google.firebase.Timestamp;
 import com.yoav_s.helper.LauncherHelper;
+import com.yoav_s.helper.NetworkUtils;
 import com.yoav_s.model.Guide;
 import com.yoav_s.model.User;
 import com.yoav_s.tashtit.ACTIVITIES.BASE.BaseActivity;
@@ -128,7 +129,12 @@ public class CreateGuideActivity extends BaseActivity {
     protected void setListeners() {
         btnMenu.setOnClickListener(v -> drawerLayout.openDrawer(GravityCompat.END));
 
-        btnPublish.setOnClickListener(v -> publishGuide());
+        btnPublish.setOnClickListener(v ->{
+            if (!NetworkUtils.requireInternet(this)) {
+                return;
+            }
+            publishGuide();
+        });
 
         btnCancel.setOnClickListener(v -> finish());
 

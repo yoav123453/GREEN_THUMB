@@ -28,6 +28,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.button.MaterialButton;
 import com.yoav_s.helper.LauncherHelper;
+import com.yoav_s.helper.NetworkUtils;
 import com.yoav_s.model.Specie;
 import com.yoav_s.tashtit.ACTIVITIES.BASE.BaseActivity;
 import com.yoav_s.tashtit.ADPTERS.SpeciesAdapter;
@@ -168,6 +169,9 @@ public class AddPlantActivity extends BaseActivity {
 
                 boolean loading = Boolean.TRUE.equals(vm.getLoading().getValue());
                 if (!loading && !vm.isLastPage() && lastVisible >= total - 4) {
+                    if (!NetworkUtils.requireInternet(AddPlantActivity.this)) {
+                        return;
+                    }
                     vm.loadNextPage();
                 }
             }
@@ -216,6 +220,9 @@ public class AddPlantActivity extends BaseActivity {
             @Override
             public void onItemSelected(android.widget.AdapterView<?> parent, View view, int position, long id) {
                 String selected = (String) spCategory.getSelectedItem();
+                if (!NetworkUtils.requireInternet(AddPlantActivity.this)) {
+                    return;
+                }
                 if (vm != null) vm.setCategory(selected);
             }
 
@@ -246,6 +253,9 @@ public class AddPlantActivity extends BaseActivity {
 
                 searchRunnable = () -> {
                     if (vm != null) {
+                        if (!NetworkUtils.requireInternet(AddPlantActivity.this)) {
+                            return;
+                        }
                         vm.searchSpecies(query);
                     }
                 };
@@ -282,9 +292,6 @@ public class AddPlantActivity extends BaseActivity {
     protected void setViewModel() {
         vm = new ViewModelProvider(this).get(SpeciesApiViewModel.class);
 
-        String selected = (String) spCategory.getSelectedItem();
-        if (selected != null) vm.setCategory(selected);
-
         vm.getLoading().observe(this, loading -> {
             if (Boolean.TRUE.equals(loading)) showProgressDialog(null, "Loading species...");
             else hideProgressDialog();
@@ -318,7 +325,16 @@ public class AddPlantActivity extends BaseActivity {
             }
         });
 
-        vm.searchSpecies("");
+        if (!NetworkUtils.requireInternet(AddPlantActivity.this)) {
+            return;
+        }
+
+        String selected = (String) spCategory.getSelectedItem();
+        if (selected != null) {
+            vm.setCategory(selected);
+        } else {
+            vm.searchSpecies("");
+        }
     }
 
     private void readExtras() {

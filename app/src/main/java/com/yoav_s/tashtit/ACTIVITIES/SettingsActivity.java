@@ -8,6 +8,8 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.yoav_s.helper.NetworkUtils;
 import com.yoav_s.tashtit.NOTIFICATIONS.TaskNotificationScheduler;
 
 
@@ -168,9 +170,21 @@ public class SettingsActivity extends BaseActivity {
         cardSnooze.setOnClickListener(v -> openSnoozeChooser());
         etSnoozeMinutes.setOnClickListener(v -> openSnoozeChooser());
 
-        btnSaveSettings.setOnClickListener(v -> saveSettings());
+        btnSaveSettings.setOnClickListener(v ->
+        {
+            if (!NetworkUtils.requireInternet(this)) {
+                return;
+            }
+            saveSettings();
+        });
 
-        btnDeleteAccount.setOnClickListener(v -> confirmDeleteAccount());
+        btnDeleteAccount.setOnClickListener(v ->
+        {
+            if (!NetworkUtils.requireInternet(this)) {
+                return;
+            }
+            confirmDeleteAccount();
+        });
 
         navMyPlants.setOnClickListener(v -> {
             drawerLayout.closeDrawer(GravityCompat.END);

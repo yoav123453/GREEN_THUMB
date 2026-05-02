@@ -22,6 +22,7 @@ import androidx.lifecycle.ViewModelProvider;
 import com.google.android.material.button.MaterialButton;
 import com.yoav_s.helper.AlertDialogHelper;
 import com.yoav_s.helper.LauncherHelper;
+import com.yoav_s.helper.NetworkUtils;
 import com.yoav_s.model.Plant;
 import com.yoav_s.model.Plants;
 import com.yoav_s.tashtit.ACTIVITIES.BASE.BaseActivity;
@@ -150,7 +151,13 @@ public class AIAssistantActivity extends BaseActivity {
     protected void setListeners() {
         btnMenu.setOnClickListener(v -> drawerLayout.openDrawer(GravityCompat.END));
 
-        btnAnswer.setOnClickListener(v -> askAi());
+        btnAnswer.setOnClickListener(v ->
+        {
+            if (!NetworkUtils.requireInternet(this)) {
+                return;
+            }
+            askAi();
+        });
 
         navMyPlants.setOnClickListener(v -> {
             drawerLayout.closeDrawer(GravityCompat.END);

@@ -14,6 +14,7 @@ import androidx.core.view.WindowInsetsCompat;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.google.android.material.button.MaterialButton;
+import com.yoav_s.helper.NetworkUtils;
 import com.yoav_s.helper.inputValidators.EmailRule;
 import com.yoav_s.helper.inputValidators.EntryValidation;
 import com.yoav_s.helper.inputValidators.Rule;
@@ -50,6 +51,9 @@ public class SignInActivity extends BaseActivity implements EntryValidation {
         readRedirectExtras();
         initializeViews();
         setViewModel();
+        if (!NetworkUtils.hasInternetConnection(this)) {
+            NetworkUtils.showNoInternetDialog(this);
+        }
     }
     @Override
     protected void initializeViews() {
@@ -73,6 +77,9 @@ public class SignInActivity extends BaseActivity implements EntryValidation {
         btnSignIn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                if (!NetworkUtils.requireInternet(SignInActivity.this)) {
+                    return;
+                }
                 if (!validate()) return;
 
                 String email = etEmail.getText().toString().trim();
@@ -98,6 +105,9 @@ public class SignInActivity extends BaseActivity implements EntryValidation {
         btnGuestMode.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                if (!NetworkUtils.requireInternet(SignInActivity.this)) {
+                    return;
+                }
                 currentUser = null;
                 startActivity(new Intent(SignInActivity.this, GuestHomeActivity.class));
             }

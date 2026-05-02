@@ -5,6 +5,8 @@ import android.os.Bundle;
 import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.yoav_s.helper.NetworkUtils;
 import com.yoav_s.tashtit.NOTIFICATIONS.TaskNotificationScheduler;
 
 
@@ -571,6 +573,10 @@ public class PlantDetailsActivity extends BaseActivity {
     private void handleTaskAction(CareTask currentTask, boolean isMarkDone) {
         if (currentTask == null) {
             Toast.makeText(this, "Task not found", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        if (!NetworkUtils.requireInternet(PlantDetailsActivity.this)) {
             return;
         }
 
