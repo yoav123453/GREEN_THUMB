@@ -10,8 +10,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.yoav_s.helper.NetworkUtils;
-import com.yoav_s.tashtit.NOTIFICATIONS.TaskNotificationScheduler;
-
+import com.yoav_s.tashtit.NOTIFICATIONS.TaskNotificationRescheduler;
+import com.yoav_s.viewmodel.RemindersViewModel;
 
 
 import androidx.activity.EdgeToEdge;
@@ -86,6 +86,8 @@ public class EditTaskActivity extends BaseActivity implements EntryValidation {
 
     private ActionMode actionMode = ActionMode.NONE;
     private boolean actionInProgress = false;
+
+    private RemindersViewModel remindersViewModel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -233,6 +235,7 @@ public class EditTaskActivity extends BaseActivity implements EntryValidation {
     @Override
     protected void setViewModel() {
         careTasksViewModel = new ViewModelProvider(this).get(CareTasksViewModel.class);
+        remindersViewModel = new ViewModelProvider(this).get(RemindersViewModel.class);
 
         showProgressDialog(null, "Loading task...");
 
@@ -282,8 +285,7 @@ public class EditTaskActivity extends BaseActivity implements EntryValidation {
             actionMode = ActionMode.NONE;
 
             if (currentUser != null) {
-                TaskNotificationScheduler.rescheduleAllForCurrentUser(this, currentUser);
-            }
+                TaskNotificationRescheduler.rescheduleAllForCurrentUser(this, currentUser, remindersViewModel);            }
 
             setResult(RESULT_OK);
             finish();

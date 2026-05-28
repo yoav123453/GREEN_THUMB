@@ -7,8 +7,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.yoav_s.helper.NetworkUtils;
-import com.yoav_s.tashtit.NOTIFICATIONS.TaskNotificationScheduler;
-
+import com.yoav_s.tashtit.NOTIFICATIONS.TaskNotificationRescheduler;
+import com.yoav_s.viewmodel.RemindersViewModel;
 
 
 import androidx.activity.EdgeToEdge;
@@ -112,6 +112,8 @@ public class PlantDetailsActivity extends BaseActivity {
     private String actionSuccessMessage = "Done";
     private String actionFailMessage = "Action failed";
     private String busyTaskId = null;
+
+    private RemindersViewModel remindersViewModel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -321,6 +323,7 @@ public class PlantDetailsActivity extends BaseActivity {
         historyNotesViewModel = new ViewModelProvider(this).get(HistoryNotesViewModel.class);
         speciesViewModel = new ViewModelProvider(this).get(SpeciesViewModel.class);
         speciesApiViewModel = new ViewModelProvider(this).get(SpeciesApiViewModel.class);
+        remindersViewModel = new ViewModelProvider(this).get(RemindersViewModel.class);
 
         showProgressDialog(null, "Loading plant details...");
 
@@ -643,8 +646,7 @@ public class PlantDetailsActivity extends BaseActivity {
         upcomingAdapter.setBusyTaskId(null);
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
         if (currentUser != null) {
-            TaskNotificationScheduler.rescheduleAllForCurrentUser(this, currentUser);
-        }
+            TaskNotificationRescheduler.rescheduleAllForCurrentUser(this, currentUser, remindersViewModel);        }
     }
 
     private void finishActionFailure(String message) {

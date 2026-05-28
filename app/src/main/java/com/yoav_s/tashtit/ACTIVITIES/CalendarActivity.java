@@ -7,12 +7,11 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.yoav_s.helper.NetworkUtils;
-import com.yoav_s.tashtit.NOTIFICATIONS.TaskNotificationScheduler;
-
+import com.yoav_s.tashtit.NOTIFICATIONS.TaskNotificationRescheduler;
+import com.yoav_s.viewmodel.RemindersViewModel;
 
 
 import androidx.activity.EdgeToEdge;
-import androidx.activity.result.ActivityResult;
 import androidx.core.graphics.Insets;
 import androidx.core.view.GravityCompat;
 import androidx.core.view.ViewCompat;
@@ -117,6 +116,7 @@ public class CalendarActivity extends BaseActivity {
     private final SimpleDateFormat headerDateFormat =
             new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
 
+    private RemindersViewModel remindersViewModel;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -271,7 +271,7 @@ public class CalendarActivity extends BaseActivity {
         plantsViewModel = new ViewModelProvider(this).get(PlantsViewModel.class);
         careTasksViewModel = new ViewModelProvider(this).get(CareTasksViewModel.class);
         historyNotesViewModel = new ViewModelProvider(this).get(HistoryNotesViewModel.class);
-
+        remindersViewModel = new ViewModelProvider(this).get(RemindersViewModel.class);
 
         showProgressDialog(null, "Loading calendar...");
 
@@ -552,8 +552,7 @@ public class CalendarActivity extends BaseActivity {
         adapter.setBusyTaskId(null);
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
         if (currentUser != null) {
-            TaskNotificationScheduler.rescheduleAllForCurrentUser(this, currentUser);
-        }
+            TaskNotificationRescheduler.rescheduleAllForCurrentUser(this, currentUser, remindersViewModel);        }
     }
 
     private void finishActionFailure(String message) {

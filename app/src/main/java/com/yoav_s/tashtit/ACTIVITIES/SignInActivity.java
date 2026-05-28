@@ -107,7 +107,7 @@ public class SignInActivity extends BaseActivity implements EntryValidation {
             public void onClick(View view) {
                 if (!NetworkUtils.requireInternet(SignInActivity.this)) {
                     return;
-                }
+                }   
                 currentUser = null;
                 startActivity(new Intent(SignInActivity.this, GuestHomeActivity.class));
             }

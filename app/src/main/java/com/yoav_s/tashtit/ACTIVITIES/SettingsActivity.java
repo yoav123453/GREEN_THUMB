@@ -10,8 +10,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.yoav_s.helper.NetworkUtils;
-import com.yoav_s.tashtit.NOTIFICATIONS.TaskNotificationScheduler;
-
+import com.yoav_s.tashtit.NOTIFICATIONS.TaskNotificationRescheduler;
+import com.yoav_s.viewmodel.RemindersViewModel;
 
 
 import androidx.activity.EdgeToEdge;
@@ -81,6 +81,8 @@ public class SettingsActivity extends BaseActivity {
     private boolean saveInProgress = false;
     private boolean deleteInProgress = false;
     private boolean defaultCreationAttempted = false;
+
+    private RemindersViewModel remindersViewModel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -223,6 +225,7 @@ public class SettingsActivity extends BaseActivity {
     @Override
     protected void setViewModel() {
         settingsViewModel = new ViewModelProvider(this).get(SettingsViewModel.class);
+        remindersViewModel = new ViewModelProvider(this).get(RemindersViewModel.class);
 
         showProgressDialog(null, "Loading settings...");
 
@@ -271,8 +274,7 @@ public class SettingsActivity extends BaseActivity {
                 if (Boolean.TRUE.equals(success)) {
                     Toast.makeText(this, "Settings saved successfully", Toast.LENGTH_SHORT).show();
                     if (currentUser != null) {
-                        TaskNotificationScheduler.rescheduleAllForCurrentUser(this, currentUser);
-                    }
+                        TaskNotificationRescheduler.rescheduleAllForCurrentUser(this, currentUser, remindersViewModel);                    }
                 } else {
                     Toast.makeText(this, "Could not save settings", Toast.LENGTH_SHORT).show();
                 }

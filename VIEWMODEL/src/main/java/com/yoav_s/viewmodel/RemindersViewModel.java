@@ -2,8 +2,11 @@ package com.yoav_s.viewmodel;
 
 import android.app.Application;
 
+import com.google.android.gms.tasks.Task;
 import com.yoav_s.model.Reminder;
 import com.yoav_s.model.Reminders;
+import com.yoav_s.model.TaskNotificationSchedule;
+import com.yoav_s.model.User;
 import com.yoav_s.repository.BASE.DB.BaseRepository;
 import com.yoav_s.repository.DB.RemindersRepository;
 import com.yoav_s.viewmodel.BASE.BaseViewModel;
@@ -24,5 +27,9 @@ public class RemindersViewModel extends BaseViewModel<Reminder, Reminders> {
 
     public void getAll() {
         getAllAscending(null, "scheduledAt");
+    }
+
+    public Task<TaskNotificationSchedule> getNotificationScheduleForUser(User currentUser) {
+        return repository.getNotificationScheduleForUser(currentUser);
     }
 }

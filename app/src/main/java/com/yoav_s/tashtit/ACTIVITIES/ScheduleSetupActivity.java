@@ -10,8 +10,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.yoav_s.helper.NetworkUtils;
-import com.yoav_s.tashtit.NOTIFICATIONS.TaskNotificationScheduler;
-
+import com.yoav_s.tashtit.NOTIFICATIONS.TaskNotificationRescheduler;
+import com.yoav_s.viewmodel.RemindersViewModel;
 
 
 import androidx.activity.EdgeToEdge;
@@ -100,6 +100,8 @@ public class ScheduleSetupActivity extends BaseActivity implements EntryValidati
     private int taskSaveIndex = 0;
 
     private boolean specieDetailsReady = false;
+
+    private RemindersViewModel remindersViewModel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -243,6 +245,7 @@ public class ScheduleSetupActivity extends BaseActivity implements EntryValidati
         speciesApiViewModel = new ViewModelProvider(this).get(SpeciesApiViewModel.class);
         plantsViewModel = new ViewModelProvider(this).get(PlantsViewModel.class);
         careTasksViewModel = new ViewModelProvider(this).get(CareTasksViewModel.class);
+        remindersViewModel = new ViewModelProvider(this).get(RemindersViewModel.class);
 
         speciesApiViewModel.getLoading().observe(this, loading -> {
             if (Boolean.TRUE.equals(loading)) {
@@ -322,8 +325,7 @@ public class ScheduleSetupActivity extends BaseActivity implements EntryValidati
                 resetSaveState();
 
                 if (currentUser != null) {
-                    TaskNotificationScheduler.rescheduleAllForCurrentUser(this, currentUser);
-                }
+                    TaskNotificationRescheduler.rescheduleAllForCurrentUser(this, currentUser, remindersViewModel);                }
 
                 Intent data = new Intent();
                 data.putExtra("PLANT_SAVED", true);

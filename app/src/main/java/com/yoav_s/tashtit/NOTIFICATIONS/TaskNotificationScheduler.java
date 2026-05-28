@@ -5,15 +5,10 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 
-import com.google.android.gms.tasks.Task;
-import com.google.android.gms.tasks.Tasks;
-import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.QuerySnapshot;
 import com.yoav_s.model.CareTask;
 import com.yoav_s.model.Plant;
 import com.yoav_s.model.Setting;
-import com.yoav_s.model.User;
+import com.yoav_s.model.TaskNotificationSchedule;
 
 import java.util.Calendar;
 import java.util.Date;
@@ -33,123 +28,81 @@ public class TaskNotificationScheduler {
 
     private TaskNotificationScheduler() {}
 
-    public static void rescheduleAllForCurrentUser(Context context, User currentUser) {
-        if (context == null || currentUser == null || currentUser.getIdFs() == null || currentUser.getIdFs().trim().isEmpty()) {
+    public static void rescheduleAll(Context context, TaskNotificationSchedule schedule) {
+        if (context == null || schedule == null) {
             return;
         }
 
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
-        String userId = currentUser.getIdFs();
+        Setting setting = schedule.getSetting();
 
-        Task<QuerySnapshot> settingsTask = db.collection("Settings")
-                .whereEqualTo("userId", userId)
-                .get();
-
-        Task<QuerySnapshot> plantsTask = db.collection("Plants")
-                .whereEqualTo("userId", userId)
-                .get();
-
-        Task<QuerySnapshot> careTasksTask = db.collection("CareTasks").get();
-
-        Tasks.whenAllSuccess(settingsTask, plantsTask, careTasksTask)
-                .addOnSuccessListener(results -> {
-                    QuerySnapshot settingsSnapshot = (QuerySnapshot) results.get(0);
-                    QuerySnapshot plantsSnapshot = (QuerySnapshot) results.get(1);
-                    QuerySnapshot tasksSnapshot = (QuerySnapshot) results.get(2);
-
-                    Setting setting = extractSetting(settingsSnapshot);
-
-                    Set<String> plantIds = new HashSet<>();
-                    Map<String, String> plantNicknameById = new HashMap<>();
-                    Map<String, Plant> plantById = new HashMap<>();
-
-                    for (DocumentSnapshot doc : plantsSnapshot.getDocuments()) {
-                        Plant plant = doc.toObject(Plant.class);
-                        if (plant == null) continue;
-
-                        plant.setIdFs(doc.getId());
-                        plantIds.add(doc.getId());
-                        plantNicknameById.put(doc.getId(), plant.getNickname() != null ? plant.getNickname() : "-");
-                        plantById.put(doc.getId(), plant);
-                    }
-
-                    cancelAllForPlants(context, plantIds, tasksSnapshot);
-
-                    if (setting == null) {
-                        setting = buildDefaultSetting(userId);
-                    }
-
-                    if (!setting.isNotificationsEnabled()) {
-                        return;
-                    }
-
-                    for (DocumentSnapshot doc : tasksSnapshot.getDocuments()) {
-                        CareTask task = doc.toObject(CareTask.class);
-                        if (task == null) continue;
-
-                        task.setIdFs(doc.getId());
-
-                        if (task.getPlantId() == null || !plantIds.contains(task.getPlantId())) continue;
-                        if (task.getState() != CareTask.State.SCHEDULED) continue;
-                        if (task.getNextDueAt() == null) continue;
-
-                        long triggerAtMillis = calculateTriggerTime(
-                                task.getNextDueAt().toDate(),
-                                setting.getReminderTime()
-                        );
-
-                        if (triggerAtMillis <= System.currentTimeMillis()) {
-                            continue;
-                        }
-
-                        scheduleTaskNotification(
-                                context,
-                                task.getIdFs(),
-                                formatTaskType(task.getType()),
-                                plantNicknameById.get(task.getPlantId()),
-                                plantById.get(task.getPlantId()),
-                                currentUser.getDisplayName(),
-                                setting.getSnoozeTime(),
-                                triggerAtMillis
-                        );
-                    }
-                })
-                .addOnFailureListener(Throwable::printStackTrace);
-    }
-
-    private static Setting extractSetting(QuerySnapshot snapshot) {
-        if (snapshot == null || snapshot.isEmpty()) {
-            return null;
-        }
-
-        DocumentSnapshot doc = snapshot.getDocuments().get(0);
-        Setting setting = doc.toObject(Setting.class);
-        if (setting != null) {
-            setting.setIdFs(doc.getId());
-        }
-        return setting;
-    }
-
-    private static Setting buildDefaultSetting(String userId) {
-        Setting setting = new Setting();
-        setting.setUserId(userId);
-        setting.setReminderTime("09:00");
-        setting.setSnoozeTime(10);
-        setting.setNotificationsEnabled(true);
-        return setting;
-    }
-
-    private static void cancelAllForPlants(Context context, Set<String> plantIds, QuerySnapshot tasksSnapshot) {
-        if (tasksSnapshot == null || plantIds == null || plantIds.isEmpty()) {
+        if (setting == null) {
             return;
         }
 
-        for (DocumentSnapshot doc : tasksSnapshot.getDocuments()) {
-            CareTask task = doc.toObject(CareTask.class);
+        Set<String> plantIds = new HashSet<>();
+        Map<String, String> plantNicknameById = new HashMap<>();
+        Map<String, Plant> plantById = new HashMap<>();
+
+        if (schedule.getPlants() != null) {
+            for (Plant plant : schedule.getPlants()) {
+                if (plant == null || plant.getIdFs() == null) continue;
+
+                plantIds.add(plant.getIdFs());
+                plantNicknameById.put(
+                        plant.getIdFs(),
+                        plant.getNickname() != null ? plant.getNickname() : "-"
+                );
+                plantById.put(plant.getIdFs(), plant);
+            }
+        }
+
+        cancelAllForTasks(context, schedule);
+
+        if (!setting.isNotificationsEnabled()) {
+            return;
+        }
+
+        if (schedule.getCareTasks() == null) {
+            return;
+        }
+
+        for (CareTask task : schedule.getCareTasks()) {
             if (task == null) continue;
-            if (task.getPlantId() == null || !plantIds.contains(task.getPlantId())) continue;
 
-            cancelReminder(context, doc.getId());
+            if (task.getPlantId() == null || !plantIds.contains(task.getPlantId())) continue;
+            if (task.getState() != CareTask.State.SCHEDULED) continue;
+            if (task.getNextDueAt() == null) continue;
+
+            long triggerAtMillis = calculateTriggerTime(
+                    task.getNextDueAt().toDate(),
+                    setting.getReminderTime()
+            );
+
+            if (triggerAtMillis <= System.currentTimeMillis()) {
+                continue;
+            }
+
+            scheduleTaskNotification(
+                    context,
+                    task.getIdFs(),
+                    formatTaskType(task.getType()),
+                    plantNicknameById.get(task.getPlantId()),
+                    plantById.get(task.getPlantId()),
+                    schedule.getUserDisplayName(),
+                    setting.getSnoozeTime(),
+                    triggerAtMillis
+            );
+        }
+    }
+
+    private static void cancelAllForTasks(Context context, TaskNotificationSchedule schedule) {
+        if (schedule == null || schedule.getCareTasks() == null) {
+            return;
+        }
+
+        for (CareTask task : schedule.getCareTasks()) {
+            if (task == null) continue;
+            cancelReminder(context, task.getIdFs());
         }
     }
 
@@ -201,6 +154,7 @@ public class TaskNotificationScheduler {
         );
 
         AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+
         if (alarmManager == null) return;
 
         alarmManager.setAndAllowWhileIdle(
@@ -221,6 +175,7 @@ public class TaskNotificationScheduler {
         );
 
         AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+
         if (alarmManager != null) {
             alarmManager.cancel(pendingIntent);
         }

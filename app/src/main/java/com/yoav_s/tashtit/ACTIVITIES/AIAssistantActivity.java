@@ -1,26 +1,34 @@
 package com.yoav_s.tashtit.ACTIVITIES;
 
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.text.method.ScrollingMovementMethod;
 import android.view.MotionEvent;
+import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
+import androidx.core.content.FileProvider;
 import androidx.core.graphics.Insets;
 import androidx.core.view.GravityCompat;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+import androidx.core.widget.NestedScrollView;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.google.android.material.button.MaterialButton;
 import com.yoav_s.helper.AlertDialogHelper;
+import com.yoav_s.helper.BitMapHelper;
 import com.yoav_s.helper.LauncherHelper;
 import com.yoav_s.helper.NetworkUtils;
 import com.yoav_s.model.Plant;
@@ -30,6 +38,8 @@ import com.yoav_s.tashtit.R;
 import com.yoav_s.viewmodel.AI.AskAiViewModel;
 import com.yoav_s.viewmodel.PlantsViewModel;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -40,11 +50,19 @@ public class AIAssistantActivity extends BaseActivity {
     private static final String GENERAL_OPTION = "General";
 
     private DrawerLayout drawerLayout;
+    private NestedScrollView scrollRoot;
 
     private ImageButton btnMenu;
 
     private Spinner spPlant;
     private EditText etPrompt;
+
+    private TextView tvConversation;
+
+    private ImageView ivAiPlantImage;
+    private MaterialButton btnAddImage;
+    private MaterialButton btnClearImage;
+
     private MaterialButton btnAnswer;
 
     private TextView navMyPlants;
@@ -60,6 +78,10 @@ public class AIAssistantActivity extends BaseActivity {
 
     private final List<Plant> userPlants = new ArrayList<>();
     private ArrayAdapter<String> spinnerAdapter;
+
+    private Bitmap selectedAiImage = null;
+
+    private final StringBuilder conversationBuilder = new StringBuilder();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -103,11 +125,19 @@ public class AIAssistantActivity extends BaseActivity {
         android.view.View contentFrame = findViewById(R.id.content_frame);
 
         drawerLayout = contentFrame.findViewById(R.id.main);
+        scrollRoot = drawerLayout.findViewById(R.id.scrollRoot);
 
         btnMenu = drawerLayout.findViewById(R.id.btnMenu);
 
         spPlant = drawerLayout.findViewById(R.id.spPlant);
         etPrompt = drawerLayout.findViewById(R.id.etPrompt);
+
+        tvConversation = drawerLayout.findViewById(R.id.tvConversation);
+
+        ivAiPlantImage = drawerLayout.findViewById(R.id.ivAiPlantImage);
+        btnAddImage = drawerLayout.findViewById(R.id.btnAddImage);
+        btnClearImage = drawerLayout.findViewById(R.id.btnClearImage);
+
         btnAnswer = drawerLayout.findViewById(R.id.btnAnswer);
 
         navMyPlants = drawerLayout.findViewById(R.id.navMyPlants);
@@ -158,6 +188,10 @@ public class AIAssistantActivity extends BaseActivity {
             }
             askAi();
         });
+
+        btnAddImage.setOnClickListener(v -> showImageSourceDialog());
+
+        btnClearImage.setOnClickListener(v -> clearSelectedImage());
 
         navMyPlants.setOnClickListener(v -> {
             drawerLayout.closeDrawer(GravityCompat.END);
@@ -220,7 +254,7 @@ public class AIAssistantActivity extends BaseActivity {
                 return;
             }
 
-            AlertDialogHelper.showInfo(this, "AI Answer", answer.trim());
+            appendAiMessage(answer.trim());
         });
 
         aiViewModel.errorResult.observe(this, errorMessage -> {
@@ -273,16 +307,36 @@ public class AIAssistantActivity extends BaseActivity {
                 ? etPrompt.getText().toString().trim()
                 : "";
 
-        if (userPrompt.isEmpty()) {
-            etPrompt.setError("Enter a prompt");
-            Toast.makeText(this, "You must enter something in the prompt area", Toast.LENGTH_SHORT).show();
+        if (userPrompt.isEmpty() && selectedAiImage == null) {
+            etPrompt.setError("Enter a prompt or add a picture");
+            Toast.makeText(this, "Write a question or attach a plant picture", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        Plant selectedPlant = getSelectedPlant();
-        String finalPrompt = buildAiPrompt(userPrompt, selectedPlant);
+        if (userPrompt.isEmpty()) {
+            userPrompt = "Recognize the plant species in the attached picture and give short care advice.";
+        }
 
-        aiViewModel.generateText(finalPrompt);
+        Plant selectedPlant = getSelectedPlant();
+        boolean hasImage = selectedAiImage != null;
+
+        String finalPrompt = buildAiPrompt(userPrompt, selectedPlant, hasImage);
+
+        String visibleUserMessage = userPrompt;
+        if (hasImage) {
+            visibleUserMessage = visibleUserMessage + "\n[Picture attached]";
+        }
+
+        appendUserMessage(visibleUserMessage);
+
+        etPrompt.setText("");
+
+        if (hasImage) {
+            aiViewModel.continueChatWithImage(finalPrompt, selectedAiImage);
+            clearSelectedImage();
+        } else {
+            aiViewModel.continueChat(finalPrompt);
+        }
     }
 
     private Plant getSelectedPlant() {
@@ -300,7 +354,7 @@ public class AIAssistantActivity extends BaseActivity {
         return userPlants.get(plantIndex);
     }
 
-    private String buildAiPrompt(String userPrompt, Plant plant) {
+    private String buildAiPrompt(String userPrompt, Plant plant, boolean hasImage) {
         StringBuilder builder = new StringBuilder();
 
         builder.append("You are a helpful plant care assistant inside an Android app. ");
@@ -308,6 +362,13 @@ public class AIAssistantActivity extends BaseActivity {
         builder.append("Answer in the same language as the user's question. ");
         builder.append("If you are not sure, say what to check next and avoid pretending to know facts you do not know. ");
         builder.append("Return plain text only. ");
+
+        if (hasImage) {
+            builder.append("Use the attached picture as visual context. ");
+            builder.append("If possible, identify the plant species from the image, but mention when the identification is uncertain. ");
+            builder.append("Also use visible symptoms such as yellow leaves, dry soil, spots, pests, or weak stems as context. ");
+        }
+
         builder.append("Do not use markdown. ");
         builder.append("Do not use *, **, ***, _, #, bullet points, numbered lists, or bold formatting. ");
 
@@ -323,6 +384,141 @@ public class AIAssistantActivity extends BaseActivity {
         builder.append("User question: ").append(userPrompt);
 
         return builder.toString();
+    }
+
+    private void appendUserMessage(String message) {
+        appendConversationMessage("You", message);
+    }
+
+    private void appendAiMessage(String message) {
+        appendConversationMessage("AI", message);
+    }
+
+    private void appendConversationMessage(String sender, String message) {
+        if (conversationBuilder.length() == 0) {
+            conversationBuilder.append(sender)
+                    .append(":\n")
+                    .append(message)
+                    .append("\n");
+        } else {
+            conversationBuilder.append("\n\n")
+                    .append(sender)
+                    .append(":\n")
+                    .append(message)
+                    .append("\n");
+        }
+
+        tvConversation.setText(conversationBuilder.toString());
+
+        if (scrollRoot != null) {
+            scrollRoot.post(() -> scrollRoot.fullScroll(View.FOCUS_DOWN));
+        }
+    }
+
+    private void showImageSourceDialog() {
+        AlertDialogHelper.showTakePicture(
+                this,
+                this::takeImageFromCamera,
+                this::pickImageFromGallery,
+                null
+        );
+    }
+
+    private void takeImageFromCamera() {
+        Uri outputUri = createTempImageUri();
+
+        if (outputUri == null) {
+            Toast.makeText(this, "Could not prepare camera", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        launcherHelper.takePictureWithPermissionCheck(outputUri, uri -> {
+            if (uri == null) {
+                Toast.makeText(this, "Could not take picture", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            Bitmap bitmap = BitMapHelper.getBitmapFromUri(
+                    AIAssistantActivity.this,
+                    uri,
+                    900,
+                    900
+            );
+
+            if (bitmap != null) {
+                bitmap = BitMapHelper.rotateBitmapIfRequired(
+                        AIAssistantActivity.this,
+                        bitmap,
+                        uri
+                );
+            }
+
+            setSelectedImage(bitmap);
+        });
+    }
+
+    private void pickImageFromGallery() {
+        launcherHelper.pickImage(uri -> {
+            if (uri == null) {
+                Toast.makeText(this, "No picture selected", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            Bitmap bitmap = BitMapHelper.getBitmapFromUri(
+                    AIAssistantActivity.this,
+                    uri,
+                    900,
+                    900
+            );
+
+            if (bitmap != null) {
+                bitmap = BitMapHelper.rotateBitmapIfRequired(
+                        AIAssistantActivity.this,
+                        bitmap,
+                        uri
+                );
+            }
+
+            setSelectedImage(bitmap);
+        });
+    }
+
+    private Uri createTempImageUri() {
+        try {
+            File picturesDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+
+            if (picturesDir == null) {
+                return null;
+            }
+
+            File imageFile = File.createTempFile("ai_plant_", ".jpg", picturesDir);
+
+            return FileProvider.getUriForFile(
+                    this,
+                    getPackageName() + ".fileprovider",
+                    imageFile
+            );
+        } catch (IOException e) {
+            return null;
+        }
+    }
+
+    private void setSelectedImage(Bitmap bitmap) {
+        if (bitmap == null) {
+            Toast.makeText(this, "Could not load picture", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        selectedAiImage = bitmap;
+        ivAiPlantImage.setImageBitmap(bitmap);
+        btnClearImage.setVisibility(View.VISIBLE);
+        Toast.makeText(this, "Picture added as AI context", Toast.LENGTH_SHORT).show();
+    }
+
+    private void clearSelectedImage() {
+        selectedAiImage = null;
+        ivAiPlantImage.setImageResource(android.R.drawable.ic_menu_gallery);
+        btnClearImage.setVisibility(View.GONE);
     }
 
     private static String safeText(String text) {

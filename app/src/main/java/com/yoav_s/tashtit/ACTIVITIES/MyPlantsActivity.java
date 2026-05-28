@@ -10,8 +10,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
-import com.yoav_s.tashtit.NOTIFICATIONS.TaskNotificationScheduler;
-
+import com.yoav_s.tashtit.NOTIFICATIONS.TaskNotificationRescheduler;
+import com.yoav_s.viewmodel.RemindersViewModel;
 
 
 
@@ -116,6 +116,8 @@ public class MyPlantsActivity extends BaseActivity {
     private final List<CareTask> pendingTaskDeletes = new ArrayList<>();
     private int deleteTaskIndex = 0;
     private Plant pendingPlantDelete = null;
+
+    private RemindersViewModel remindersViewModel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -252,6 +254,7 @@ public class MyPlantsActivity extends BaseActivity {
         careTasksViewModel = new ViewModelProvider(this).get(CareTasksViewModel.class);
         historyNotesViewModel = new ViewModelProvider(this).get(HistoryNotesViewModel.class);
         speciesViewModel = new ViewModelProvider(this).get(SpeciesViewModel.class);
+        remindersViewModel = new ViewModelProvider(this).get(RemindersViewModel.class);
 
         showProgressDialog(null, "Loading your plants...");
 
@@ -606,8 +609,7 @@ public class MyPlantsActivity extends BaseActivity {
         adapter.setHiddenNextTaskPlantId(null);
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
         if (currentUser != null) {
-            TaskNotificationScheduler.rescheduleAllForCurrentUser(this, currentUser);
-        }
+            TaskNotificationRescheduler.rescheduleAllForCurrentUser(this, currentUser, remindersViewModel);        }
     }
 
     private void finishActionFailure(String message) {
@@ -634,8 +636,7 @@ public class MyPlantsActivity extends BaseActivity {
     protected void onResume() {
         super.onResume();
         if (currentUser != null) {
-            TaskNotificationScheduler.rescheduleAllForCurrentUser(this, currentUser);
-        }
+            TaskNotificationRescheduler.rescheduleAllForCurrentUser(this, currentUser, remindersViewModel);        }
     }
 
     private void requestNotificationPermissionIfNeeded() {

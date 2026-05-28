@@ -250,14 +250,14 @@
                                 android:id="@+id/tvCategoryValue"
                                 android:layout_width="match_parent"
                                 android:layout_height="match_parent"
+                                android:ellipsize="end"
                                 android:gravity="center_vertical"
+                                android:maxLines="1"
                                 android:paddingStart="14dp"
                                 android:paddingEnd="14dp"
-                                android:text="House"
+                                android:text="Other"
                                 android:textColor="#111827"
-                                android:textStyle="bold"
-                                android:maxLines="1"
-                                android:ellipsize="end" />
+                                android:textStyle="bold" />
                         </com.google.android.material.card.MaterialCardView>
                     </androidx.constraintlayout.widget.ConstraintLayout>
 
